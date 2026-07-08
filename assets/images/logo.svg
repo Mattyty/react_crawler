@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg-dark { fill: #121212; }
+      .brand-yellow { fill: #FFD200; }
+    </style>
+  </defs>
+ 
+  <!-- App Dark Background Canvas -->
+  <rect width="100%" height="100%" class="bg-dark"/>
+ 
+  <g transform="translate(15, 0)">
+    <!-- 1. Magnifying Glass Handle: Anchored perfectly at the bottom-left corner -->
+    <path class="brand-yellow" d="M 165,315 L 105,375 C 97,383 97,396 105,404 L 121,420 C 129,428 142,428 150,420 L 210,360 Z" />
+   
+    <!-- 2. The Main "C" Lens Ring Frame -->
+    <path class="brand-yellow" d="M 342,138 C 317,113 284,100 250,100 C 178,100 120,158 120,230 C 120,302 178,360 250,360 C 284,360 317,347 342,322 L 313,293 C 296,310 274,320 250,320 C 200,320 160,280 160,230 C 160,180 200,140 250,140 C 274,140 296,150 313,167 Z" />
+   
+    <!-- 3. Left Element: Classic Beer Pint Silhouette -->
+    <path class="brand-yellow" d="M 205,180 L 210,270 C 210,276 215,280 221,280 L 239,280 C 245,280 250,276 250,270 L 255,180 Z" />
+    <!-- Pint Glass Handle Segment -->
+    <path class="brand-yellow" d="M 205,195 L 192,195 C 187,195 183,199 183,204 L 183,246 C 183,251 187,255 192,255 L 210,255" style="fill:none; stroke:#FFD200; stroke-width:6; stroke-linecap:round;" />
+   
+    <!-- 4. Right Element: Modern Cocktail/Martini Glass Silhouette -->
+    <path class="brand-yellow" d="M 265,180 L 310,180 L 290,225 L 290,270 L 302,270 L 302,280 L 273,280 L 273,270 L 285,270 L 285,225 Z" />
+    <!-- Liquid Separation Accent Cut -->
+    <line x1="272" y1="192" x2="303" y2="192" stroke="#121212" stroke-width="3" />
+  </g>
+</svg>

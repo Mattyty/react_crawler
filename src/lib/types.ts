@@ -27,4 +27,5 @@ export interface Offer {
   deal_description?: string;
   start_time?: string;
   end_time?: string;
+  is_top_deal?: boolean;
 }

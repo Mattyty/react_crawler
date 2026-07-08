@@ -13,7 +13,7 @@ export function SearchBar({ searchText, onChangeText, filteredBars, onSelectBar 
   return (
     <View style={styles.searchWrapper}>
       <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Text style={styles.searchIcon}>⚲</Text>
         <TextInput
           style={styles.searchInput}
           placeholder="Search Bars"
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 2,
   },
-  searchIcon: { fontSize: 18, marginRight: 8 },
+  searchIcon: { fontSize: 16, marginRight: 8, color: '#15161E', fontWeight: '700' },
   searchInput: { flex: 1, fontSize: 14, color: '#15161E' },
   searchDropdown: {
     position: 'absolute',

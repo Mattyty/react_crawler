@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
@@ -13,22 +13,22 @@ const CITY_COORDS: Record<string, [number, number]> = {
   Birmingham: [52.4862, -1.8904],
 };
 
-const STATUS_BADGES: Record<MapBar['status'], { label: string; color: string }> = {
-  live: { label: 'LIVE', color: '#22C55E' },
-  upcoming: { label: 'UPCOMING', color: '#9CA3AF' },
-  featured: { label: 'FEATURED', color: '#F59E0B' },
-};
-
 const PIN_COLORS: Record<MapBar['status'], string> = {
-  live: '#121212',
+  live: '#E1B12C',
   upcoming: '#9CA3AF',
   featured: '#F59E0B',
 };
 
-const PIN_DOT_COLORS: Record<MapBar['status'], string> = {
-  live: '#E1B12C',
-  upcoming: 'white',
-  featured: 'white',
+const GLOW_COLORS: Record<MapBar['status'], string> = {
+  live: 'rgba(225, 177, 44, 0.5)',
+  upcoming: 'rgba(156, 163, 175, 0.4)',
+  featured: 'rgba(245, 158, 11, 0.5)',
+};
+
+const STATUS_LABELS: Record<MapBar['status'], string> = {
+  live: 'LIVE NOW',
+  upcoming: 'UPCOMING',
+  featured: 'FEATURED',
 };
 
 export function MapScreen() {
@@ -43,7 +43,7 @@ export function MapScreen() {
 
   const centre = CITY_COORDS[city] || CITY_COORDS.Manchester;
 
-  const handleSheetPress = useCallback(() => {
+  const handleViewDeals = useCallback(() => {
     if (selectedBar) {
       router.push({ pathname: '/bar-detail', params: { barId: String(selectedBar.id) } });
     }
@@ -74,20 +74,34 @@ export function MapScreen() {
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap',
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        className: 'lighter-tiles',
       }).addTo(map);
+
+      // Inject CSS to lighten the tiles
+      if (!document.getElementById('map-tile-style')) {
+        const style = document.createElement('style');
+        style.id = 'map-tile-style';
+        style.textContent = '.lighter-tiles { filter: brightness(1.4) saturate(0.8); }';
+        document.head.appendChild(style);
+      }
 
       markersRef.current = [];
 
       mapBars.forEach((bar) => {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41"><path d="M12.5 0C5.6 0 0 5.6 0 12.5 0 21.9 12.5 41 12.5 41S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z" fill="${PIN_COLORS[bar.status]}"/><circle cx="12.5" cy="12.5" r="5" fill="${PIN_DOT_COLORS[bar.status]}"/></svg>`;
+        const color = PIN_COLORS[bar.status];
+        const glow = GLOW_COLORS[bar.status];
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="11" fill="${glow}" />
+          <circle cx="12" cy="12" r="7" fill="${color}" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+        </svg>`;
         const icon = L.divIcon({
           html: svg,
           className: '',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
         });
 
         const marker = L.marker([bar.lat!, bar.long!], { icon }).addTo(map);
@@ -98,7 +112,6 @@ export function MapScreen() {
         markersRef.current.push(marker);
       });
 
-      // Invalidate size after render to fix tile loading in rounded containers
       setTimeout(() => map.invalidateSize(), 100);
     };
 
@@ -115,7 +128,7 @@ export function MapScreen() {
   if (loading) {
     return (
       <View style={styles.wrapper}>
-        <View style={styles.card}>
+        <View style={styles.mapContainer}>
           <ActivityIndicator size="large" color="#E1B12C" />
         </View>
       </View>
@@ -124,27 +137,36 @@ export function MapScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.card}>
+      <View style={styles.mapContainer}>
         <div
           ref={mapContainerRef as any}
           style={{ width: '100%', height: '100%', borderRadius: 16, overflow: 'hidden' }}
         />
       </View>
 
+      {/* Floating preview card - outside map container to avoid overflow clipping */}
       {selectedBar && (
-        <Pressable style={styles.sheet} onPress={handleSheetPress}>
-          <Image
-            source={{ uri: selectedBar.image_url || 'https://picsum.photos/seed/bar/600/300' }}
-            style={styles.image}
-          />
-          <View style={styles.info}>
-            <Text style={styles.name}>{selectedBar.name}</Text>
-            {selectedBar.deal && <Text style={styles.deal}>{selectedBar.deal}</Text>}
-            <View style={[styles.badge, { backgroundColor: STATUS_BADGES[selectedBar.status].color }]}>
-              <Text style={styles.badgeText}>{STATUS_BADGES[selectedBar.status].label}</Text>
+        <View style={styles.floatingCardWrapper}>
+          <View style={styles.floatingCard}>
+            <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
+              <Text style={styles.closeText}>✕</Text>
+            </Pressable>
+            <View style={styles.cardHeader}>
+              <Text style={styles.barName}>{selectedBar.name}</Text>
+              <View style={[styles.statusDot, { backgroundColor: PIN_COLORS[selectedBar.status] }]} />
             </View>
+            {selectedBar.deal && (
+              <Text style={styles.dealText} numberOfLines={2}>{selectedBar.deal}</Text>
+            )}
+            {!selectedBar.deal && (
+              <Text style={styles.dealText}>Happy hour available</Text>
+            )}
+            <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+            <Pressable style={styles.viewDealsButton} onPress={handleViewDeals}>
+              <Text style={styles.viewDealsText}>View Deals</Text>
+            </Pressable>
           </View>
-        </Pressable>
+        </View>
       )}
     </View>
   );
@@ -153,29 +175,91 @@ export function MapScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    padding: '4%' as any,
+    padding: 12,
+    position: 'relative' as any,
   },
-  card: {
+  mapContainer: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#1a1a2e',
   },
-  sheet: {
-    backgroundColor: '#fff',
+  floatingCardWrapper: {
+    position: 'absolute' as any,
+    bottom: 28,
+    left: 28,
+    right: 28,
+  },
+  floatingCard: {
+    backgroundColor: '#1E1E2E',
     borderRadius: 16,
-    marginTop: 12,
-    overflow: 'hidden',
+    padding: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(225, 177, 44, 0.2)',
+    position: 'relative' as any,
   },
-  image: { width: '100%', height: 120, borderTopLeftRadius: 16, borderTopRightRadius: 16 },
-  info: { padding: 12, gap: 4 },
-  name: { fontSize: 16, fontWeight: '700', color: '#0F1113' },
-  deal: { fontSize: 13, color: '#57636C' },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  closeButton: {
+    position: 'absolute' as any,
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  barName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginLeft: 8,
+  },
+  dealText: {
+    fontSize: 13,
+    color: '#A0A0B0',
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  statusLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#E1B12C',
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  viewDealsButton: {
+    backgroundColor: '#E1B12C',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  viewDealsText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#121212',
+  },
 });

@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const [bars, setBars] = useState<Bar[]>([]);
   const [liveOffers, setLiveOffers] = useState<Offer[]>([]);
   const [upcomingOffers, setUpcomingOffers] = useState<Offer[]>([]);
+  const [topDealBars, setTopDealBars] = useState<Bar[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'bars' | 'map'>('bars');
@@ -59,9 +60,15 @@ export default function HomeScreen() {
     );
     const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now);
 
+    const topDealBarIds = new Set(
+      allOffers.filter((o) => o.is_top_deal && barIds.includes(o.bar_id)).map((o) => o.bar_id)
+    );
+    const topDeals = cityBars.filter((b) => topDealBarIds.has(b.id));
+
     setBars(cityBars);
     setLiveOffers(live);
     setUpcomingOffers(upcoming);
+    setTopDealBars(topDeals);
     setLoading(false);
   }, [city]);
 
@@ -109,13 +116,13 @@ export default function HomeScreen() {
           style={[styles.tab, activeTab === 'bars' && styles.tabActive]}
           onPress={() => setActiveTab('bars')}
         >
-          <Text style={styles.tabText}>🍺 Bars</Text>
+          <Text style={styles.tabText}>Bars</Text>
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === 'map' && styles.tabActive]}
           onPress={() => setActiveTab('map')}
         >
-          <Text style={styles.tabText}>📍 Map</Text>
+          <Text style={styles.tabText}>Map</Text>
         </Pressable>
       </View>
 
@@ -124,7 +131,7 @@ export default function HomeScreen() {
           {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
           <Text style={styles.sectionTitle}>Top Deals...</Text>
-          <TopDealsSection bars={bars} onPress={navigateToBar} />
+          <TopDealsSection bars={topDealBars} onPress={navigateToBar} />
 
           <View style={styles.divider} />
           <LiveNowSection offers={liveOffers} bars={bars} onPress={navigateToBar} />
