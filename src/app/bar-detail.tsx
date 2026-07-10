@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { IconBack } from '@/components/Icons';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 
@@ -31,18 +32,21 @@ export default function BarDetailScreen() {
 
   useEffect(() => {
     (async () => {
-      const [barRes, offerRes] = await Promise.all([
+      const today = getDayOfWeek();
+      const [barRes, offersRes] = await Promise.all([
         supabase.from('bars').select('*').eq('id', Number(barId)).single(),
         supabase
           .from('offers')
           .select('*')
-          .eq('bar_id', Number(barId))
-          .eq('day_of_week', getDayOfWeek())
-          .limit(1)
-          .maybeSingle(),
+          .eq('bar_id', Number(barId)),
       ]);
       if (barRes.data) setBar(barRes.data);
-      if (offerRes.data) setOffer(offerRes.data);
+      // Find today's offer with flexible day matching
+      const allBarOffers = offersRes.data || [];
+      const todayOffer = allBarOffers.find(
+        (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
+      ) || allBarOffers[0] || null;
+      if (todayOffer) setOffer(todayOffer);
       setLoading(false);
     })();
   }, [barId]);
@@ -135,15 +139,23 @@ export default function BarDetailScreen() {
           <Text style={styles.directions}>Get Directions!</Text>
 
           {/* Take Me There */}
-          <Pressable style={styles.button} onPress={handleTakeMeThere}>
-            <Text style={styles.buttonIcon}>🧭</Text>
-            <Text style={styles.buttonText}>Take Me There</Text>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleTakeMeThere}>
+            {({ pressed }) => (
+              <>
+                <Text style={[styles.buttonIcon, pressed && styles.buttonTextPressed]}>🧭</Text>
+                <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Take Me There</Text>
+              </>
+            )}
           </Pressable>
 
           {/* Book A Table */}
-          <Pressable style={styles.button} onPress={handleBookTable}>
-            <Text style={styles.buttonIcon}>✓</Text>
-            <Text style={styles.buttonText}>Book A Table</Text>
+          <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleBookTable}>
+            {({ pressed }) => (
+              <>
+                <Text style={[styles.buttonIcon, pressed && styles.buttonTextPressed]}>✓</Text>
+                <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Book A Table</Text>
+              </>
+            )}
           </Pressable>
 
           {/* Deal Verification */}
@@ -152,11 +164,15 @@ export default function BarDetailScreen() {
             <Text style={styles.thanksText}>Thanks for keeping Crawler updated 👍</Text>
           ) : (
             <View style={styles.verifyRow}>
-              <Pressable style={styles.noButton} onPress={() => handleReport(false)}>
-                <Text style={styles.voteText}>NO</Text>
+              <Pressable style={({ pressed }) => [styles.noButton, pressed && styles.buttonPressed]} onPress={() => handleReport(false)}>
+                {({ pressed }) => (
+                  <Text style={[styles.voteText, pressed && styles.buttonTextPressed]}>NO</Text>
+                )}
               </Pressable>
-              <Pressable style={styles.yesButton} onPress={() => handleReport(true)}>
-                <Text style={styles.voteText}>YES</Text>
+              <Pressable style={({ pressed }) => [styles.yesButton, pressed && styles.buttonPressed]} onPress={() => handleReport(true)}>
+                {({ pressed }) => (
+                  <Text style={[styles.voteText, pressed && styles.buttonTextPressed]}>YES</Text>
+                )}
               </Pressable>
             </View>
           )}
@@ -172,7 +188,7 @@ function Header({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.header}>
       <Pressable onPress={onBack} hitSlop={8}>
-        <Text style={styles.backIcon}>←</Text>
+        <IconBack size={26} color="#E1B12C" />
       </Pressable>
       <Text style={styles.logo}>CRAWLER</Text>
       <View style={styles.spacer} />
@@ -225,6 +241,8 @@ const styles = StyleSheet.create({
   },
   buttonIcon: { fontSize: 15 },
   buttonText: { color: '#E1B12C', fontSize: 16, fontWeight: '600' },
+  buttonPressed: { backgroundColor: '#E1B12C' },
+  buttonTextPressed: { color: '#121212' },
   verifyTitle: { fontSize: 18, fontWeight: '500', textAlign: 'center', marginTop: 24 },
   verifyRow: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginTop: 12 },
   noButton: {

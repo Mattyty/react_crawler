@@ -9,7 +9,12 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, maxWidth: '100%', overflow: 'hidden' }}>
       <AppStateProvider>
         <OnboardingFlow />
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
       </AppStateProvider>
     </GestureHandlerRootView>
   );

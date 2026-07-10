@@ -34,6 +34,7 @@ export default function HomeScreen() {
   const [liveOffers, setLiveOffers] = useState<Offer[]>([]);
   const [upcomingOffers, setUpcomingOffers] = useState<Offer[]>([]);
   const [topDealBars, setTopDealBars] = useState<Bar[]>([]);
+  const [topDealOffers, setTopDealOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'bars' | 'map'>('bars');
@@ -61,14 +62,22 @@ export default function HomeScreen() {
     const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now);
 
     const topDealBarIds = new Set(
-      allOffers.filter((o) => o.is_top_deal && barIds.includes(o.bar_id)).map((o) => o.bar_id)
+      allOffers.filter((o) => {
+        const val = (o as any).is_top_deal ?? (o as any).top_deal;
+        return (val === true || val === 'true' || val === 'TRUE' || val === 1) && barIds.includes(o.bar_id);
+      }).map((o) => o.bar_id)
     );
     const topDeals = cityBars.filter((b) => topDealBarIds.has(b.id));
+    const topOffers = allOffers.filter((o) => {
+      const val = (o as any).is_top_deal ?? (o as any).top_deal;
+      return (val === true || val === 'true' || val === 'TRUE' || val === 1) && barIds.includes(o.bar_id);
+    });
 
     setBars(cityBars);
     setLiveOffers(live);
     setUpcomingOffers(upcoming);
     setTopDealBars(topDeals);
+    setTopDealOffers(topOffers);
     setLoading(false);
   }, [city]);
 
@@ -77,7 +86,7 @@ export default function HomeScreen() {
   }, [fetchData]);
 
   const filteredBars = searchText
-    ? bars.filter((b) => b.name.toLowerCase().includes(searchText.toLowerCase()))
+    ? bars.filter((b) => b.name.toLowerCase().startsWith(searchText.toLowerCase()))
     : [];
 
   const flashBars = bars.filter((b) => b.is_flash_active);
@@ -116,13 +125,17 @@ export default function HomeScreen() {
           style={[styles.tab, activeTab === 'bars' && styles.tabActive]}
           onPress={() => setActiveTab('bars')}
         >
-          <Text style={styles.tabText}>Bars</Text>
+          <View style={styles.tabContent}>
+            <Text style={styles.tabText}>Bars</Text>
+          </View>
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === 'map' && styles.tabActive]}
           onPress={() => setActiveTab('map')}
         >
-          <Text style={styles.tabText}>Map</Text>
+          <View style={styles.tabContent}>
+            <Text style={styles.tabText}>Map</Text>
+          </View>
         </Pressable>
       </View>
 
@@ -131,7 +144,7 @@ export default function HomeScreen() {
           {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
           <Text style={styles.sectionTitle}>Top Deals...</Text>
-          <TopDealsSection bars={topDealBars} onPress={navigateToBar} />
+          <TopDealsSection bars={topDealBars} offers={topDealOffers} onPress={navigateToBar} />
 
           <View style={styles.divider} />
           <LiveNowSection offers={liveOffers} bars={bars} onPress={navigateToBar} />
@@ -163,9 +176,10 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: { borderBottomColor: '#6F61EF' },
+  tabContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   tabText: { fontSize: 14, fontWeight: '500', color: '#15161E' },
   scrollContent: { flex: 1, backgroundColor: '#fff' },
-  sectionTitle: { fontSize: 16, fontWeight: '700', paddingHorizontal: 24, paddingTop: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10 },
   divider: { height: 2, backgroundColor: '#E5E7EB', marginVertical: 12, marginHorizontal: 16 },
 
 });

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { IconBriefcase, IconCamera, IconGraduation, IconHome } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
 
 const PERSONAS = [
-  { name: 'Student', icon: '🎓' },
-  { name: 'Work', icon: '💼' },
-  { name: 'Local', icon: '🏠' },
-  { name: 'Visitor', icon: '🍺' },
+  { name: 'Student', icon: <IconGraduation size={22} color="#121212" /> },
+  { name: 'Work', icon: <IconBriefcase size={22} color="#121212" /> },
+  { name: 'Local', icon: <IconHome size={22} color="#121212" /> },
+  { name: 'Visitor', icon: <IconCamera size={22} color="#121212" /> },
 ];
 
 interface Props {
@@ -30,7 +31,7 @@ export function PersonaSelector({ visible, onDone }: Props) {
           <Text style={styles.title}>Customize Your Feed.{'\n'}What Brings You To Town?</Text>
           {PERSONAS.map((p) => (
             <Pressable key={p.name} style={styles.option} onPress={() => selectPersona(p.name)}>
-              <Text style={styles.icon}>{p.icon}</Text>
+              <View style={styles.iconWrap}>{p.icon}</View>
               <Text style={styles.optionText}>{p.name}</Text>
             </Pressable>
           ))}
@@ -68,9 +69,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 4,
   },
-  icon: {
-    fontSize: 20,
-    marginRight: 16,
+  iconWrap: {
+    width: 28,
+    marginRight: 12,
+    alignItems: 'center',
   },
   optionText: {
     fontSize: 18,

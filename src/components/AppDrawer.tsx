@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useAppState } from '@/context/AppStateContext';
 import { AboutUs } from '@/components/AboutUs';
+import { IconCity, IconInvader, IconUserCircle } from '@/components/Icons';
 import { CitySelector } from '@/components/onboarding/CitySelector';
 import { PersonaSelector } from '@/components/onboarding/PersonaSelector';
+import { useAppState } from '@/context/AppStateContext';
 
 interface Props {
   visible: boolean;
@@ -22,15 +23,12 @@ export function AppDrawer({ visible, onClose }: Props) {
       <Modal visible={visible} transparent animationType="fade">
         <View style={styles.backdrop}>
           <View style={styles.drawer}>
-            <View style={styles.header}>
-              <Text style={styles.headerIcon}>👤</Text>
+            {/* Profile header - tap to close */}
+            <Pressable style={styles.header} onPress={onClose}>
+              <View style={styles.iconWrap}>
+                <IconUserCircle size={20} color="#E1B12C" />
+              </View>
               <Text style={styles.headerText}>Your Profile</Text>
-            </View>
-
-            {/* Home */}
-            <Pressable style={styles.item} onPress={onClose}>
-              <Text style={styles.icon}>🏠</Text>
-              <Text style={styles.itemText}>Home</Text>
             </Pressable>
 
             {/* City */}
@@ -41,7 +39,9 @@ export function AppDrawer({ visible, onClose }: Props) {
                 setTimeout(() => setShowCity(true), 300);
               }}
             >
-              <Text style={styles.icon}>📍</Text>
+              <View style={styles.iconWrap}>
+                <IconCity size={18} color="#E1B12C" />
+              </View>
               <Text style={styles.itemText}>City: </Text>
               <Text style={styles.itemValue}>{currentCity || 'Manchester'}</Text>
             </Pressable>
@@ -54,7 +54,9 @@ export function AppDrawer({ visible, onClose }: Props) {
                 setTimeout(() => setShowPersona(true), 300);
               }}
             >
-              <Text style={styles.icon}>👤</Text>
+              <View style={styles.iconWrap}>
+                <IconUserCircle size={18} color="#E1B12C" />
+              </View>
               <Text style={styles.itemText}>Profile: </Text>
               <Text style={styles.itemValue}>{userPersona || 'Student'}</Text>
             </Pressable>
@@ -67,7 +69,9 @@ export function AppDrawer({ visible, onClose }: Props) {
                 setTimeout(() => setShowAbout(true), 300);
               }}
             >
-              <Text style={styles.icon}>👋</Text>
+              <View style={styles.iconWrap}>
+                <IconInvader size={18} color="#E1B12C" />
+              </View>
               <Text style={styles.itemText}>About Us</Text>
             </Pressable>
           </View>
@@ -104,10 +108,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  headerIcon: {
-    fontSize: 20,
-    marginRight: 16,
-  },
   headerText: {
     color: '#fff',
     fontSize: 20,
@@ -118,9 +118,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  icon: {
-    fontSize: 18,
-    marginRight: 16,
+  iconWrap: {
+    width: 28,
+    marginRight: 12,
+    alignItems: 'center',
   },
   itemText: {
     color: '#fff',

@@ -1,10 +1,12 @@
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
+import { formatDistance, haversineDistance } from '@/lib/haversine';
 
 const CITY_COORDS: Record<string, { latitude: number; longitude: number }> = {
   Manchester: { latitude: 53.4808, longitude: -2.2426 },
@@ -41,8 +43,30 @@ export function MapScreen() {
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
+
+  // Request permission and watch user location
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
+
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
+      subscription = await Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.High, distanceInterval: 10 },
+        (loc) => {
+          setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+        }
+      );
+    })();
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
 
   const handleMarkerPress = useCallback((bar: MapBar) => {
     setSelectedBar(bar);
@@ -57,6 +81,11 @@ export function MapScreen() {
       router.push({ pathname: '/bar-detail', params: { barId: String(selectedBar.id) } });
     }
   }, [selectedBar, router]);
+
+  // Calculate distance to selected bar
+  const distanceText = selectedBar && userLocation && selectedBar.lat && selectedBar.long
+    ? formatDistance(haversineDistance(userLocation.lat, userLocation.lng, selectedBar.lat, selectedBar.long))
+    : null;
 
   if (loading) {
     return (
@@ -78,10 +107,25 @@ export function MapScreen() {
           onPress={() => setSelectedBar(null)}
         >
           <UrlTile
-            urlTemplate="https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             maximumZ={19}
             flipY={false}
           />
+
+          {/* User location blue dot */}
+          {userLocation && (
+            <Marker
+              coordinate={{ latitude: userLocation.lat, longitude: userLocation.lng }}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.blueDotWrapper}>
+                <View style={styles.blueDotPulse} />
+                <View style={styles.blueDot} />
+              </View>
+            </Marker>
+          )}
+
+          {/* Bar markers */}
           {mapBars.map((bar) => (
             <Marker
               key={bar.id}
@@ -99,6 +143,9 @@ export function MapScreen() {
         {/* Floating preview card */}
         {selectedBar && (
           <View style={styles.floatingCard}>
+            <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
+              <Text style={styles.closeText}>✕</Text>
+            </Pressable>
             <View style={styles.cardHeader}>
               <Text style={styles.barName}>{selectedBar.name}</Text>
               <View style={[styles.statusDot, { backgroundColor: PIN_COLORS[selectedBar.status] }]} />
@@ -109,7 +156,10 @@ export function MapScreen() {
             {!selectedBar.deal && (
               <Text style={styles.dealText}>Happy hour available</Text>
             )}
-            <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+              {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
+            </View>
             <Pressable style={styles.viewDealsButton} onPress={handleViewDeals}>
               <Text style={styles.viewDealsText}>View Deals</Text>
             </Pressable>
@@ -126,10 +176,38 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#f0f0f0',
   },
   map: { flex: 1 },
   loading: { justifyContent: 'center', alignItems: 'center' },
+  // Blue dot marker
+  blueDotWrapper: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  blueDotPulse: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(66, 133, 244, 0.25)',
+  },
+  blueDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#4285F4',
+    borderWidth: 2.5,
+    borderColor: '#fff',
+    shadowColor: '#4285F4',
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
+  },
+  // Bar markers
   markerWrapper: {
     width: 24,
     height: 24,
@@ -149,6 +227,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.85)',
   },
+  // Floating card
   floatingCard: {
     position: 'absolute',
     bottom: 16,
@@ -164,6 +243,23 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(225, 177, 44, 0.2)',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -189,12 +285,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 18,
   },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
   statusLabel: {
     fontSize: 11,
     fontWeight: '600',
     color: '#E1B12C',
     letterSpacing: 1,
-    marginBottom: 12,
+  },
+  distanceText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#8B8BA0',
   },
   viewDealsButton: {
     backgroundColor: '#E1B12C',

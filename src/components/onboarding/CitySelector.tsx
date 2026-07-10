@@ -1,11 +1,12 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { IconCity, IconShip } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
 
 const CITIES = [
-  { name: 'Manchester', icon: '🏙️' },
-  { name: 'Liverpool', icon: '⛴️' },
+  { name: 'Manchester', icon: <IconCity size={22} color="#121212" /> },
+  { name: 'Liverpool', icon: <IconShip size={22} color="#121212" /> },
 ];
 
 interface Props {
@@ -28,7 +29,7 @@ export function CitySelector({ visible, onDone }: Props) {
           <Text style={styles.title}>Select Your City:</Text>
           {CITIES.map((city) => (
             <Pressable key={city.name} style={styles.option} onPress={() => selectCity(city.name)}>
-              <Text style={styles.icon}>{city.icon}</Text>
+              <View style={styles.iconWrap}>{city.icon}</View>
               <Text style={styles.optionText}>{city.name}</Text>
             </Pressable>
           ))}
@@ -66,9 +67,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 4,
   },
-  icon: {
-    fontSize: 20,
-    marginRight: 16,
+  iconWrap: {
+    width: 28,
+    marginRight: 12,
+    alignItems: 'center',
   },
   optionText: {
     fontSize: 18,

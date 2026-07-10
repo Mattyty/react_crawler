@@ -1,6 +1,6 @@
+import { Bar } from '@/lib/types';
 import React from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Bar } from '@/lib/types';
 
 interface Props {
   bars: Bar[];
@@ -16,7 +16,7 @@ export function FlashSection({ bars, onPress }: Props) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 12 }}
       renderItem={({ item }) => (
-        <Pressable onPress={() => onPress(item)} style={styles.flashCard}>
+        <Pressable onPress={() => onPress(item)} style={({ pressed }) => [styles.flashCard, pressed && styles.pressed]}>
           <Image source={{ uri: item.image_url || 'https://picsum.photos/300/180' }} style={styles.flashImage} />
           <View style={styles.flashOverlay}>
             <Text style={styles.flashName}>{item.name}</Text>
@@ -29,7 +29,8 @@ export function FlashSection({ bars, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  flashCard: { width: 300, height: 180, borderRadius: 12, overflow: 'hidden', marginRight: 12 },
+  flashCard: { width: 300, height: 180, borderRadius: 12, overflow: 'hidden', marginRight: 12, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 3 }, elevation: 4 },
+  pressed: { backgroundColor: '#E1B12C' },
   flashImage: { width: '100%', height: '100%' },
   flashOverlay: {
     position: 'absolute',
