@@ -13,11 +13,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -27,6 +26,3 @@ jobs:
 
       - name: Build APK
         run: eas build --platform android --profile preview --non-interactive
-
-      - name: Get build URL
-        run: echo "Build complete! Check your Expo dashboard for the APK download link."
