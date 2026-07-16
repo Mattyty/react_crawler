@@ -28,4 +28,5 @@ export interface Offer {
   start_time?: string;
   end_time?: string;
   is_top_deal?: boolean;
+  drinks?: string[];
 }

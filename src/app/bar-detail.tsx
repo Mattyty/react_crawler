@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { IconBack } from '@/components/Icons';
+import { IconBack, IconStation, IconTime } from '@/components/Icons';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 
@@ -27,12 +27,17 @@ export default function BarDetailScreen() {
   const router = useRouter();
   const [bar, setBar] = useState<Bar | null>(null);
   const [offer, setOffer] = useState<Offer | null>(null);
+  const [offerDays, setOfferDays] = useState<string[]>([]);
+  const [isLiveNow, setIsLiveNow] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reported, setReported] = useState(false);
 
   useEffect(() => {
     (async () => {
       const today = getDayOfWeek();
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:00`;
+
       const [barRes, offersRes] = await Promise.all([
         supabase.from('bars').select('*').eq('id', Number(barId)).single(),
         supabase
@@ -41,12 +46,24 @@ export default function BarDetailScreen() {
           .eq('bar_id', Number(barId)),
       ]);
       if (barRes.data) setBar(barRes.data);
-      // Find today's offer with flexible day matching
+
       const allBarOffers = offersRes.data || [];
+
+      // Extract all unique days this offer runs
+      const days = Array.from(new Set(allBarOffers.map((o) => o.day_of_week).filter(Boolean))) as string[];
+      setOfferDays(days);
+
+      // Find today's offer
       const todayOffer = allBarOffers.find(
         (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
       ) || allBarOffers[0] || null;
-      if (todayOffer) setOffer(todayOffer);
+      if (todayOffer) {
+        setOffer(todayOffer);
+        // Check if live now
+        if (todayOffer.start_time && todayOffer.end_time) {
+          setIsLiveNow(todayOffer.start_time <= currentTime && todayOffer.end_time >= currentTime);
+        }
+      }
       setLoading(false);
     })();
   }, [barId]);
@@ -107,8 +124,30 @@ export default function BarDetailScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* Bar Name */}
-          <Text style={styles.barName}>{bar.name}</Text>
+          {/* Live Status */}
+          <View style={styles.statusRow}>
+            <Text style={[styles.statusBadge, { color: isLiveNow ? '#22C55E' : '#E1B12C' }]}>
+              {isLiveNow ? 'LIVE' : 'COMING UP...'}
+            </Text>
+            {isLiveNow
+              ? <IconStation size={14} color="#22C55E" />
+              : <IconTime size={14} color="#E1B12C" />
+            }
+          </View>
+
+          {/* Bar Name - linked if url available */}
+          {bar.url ? (
+            <Pressable onPress={() => Linking.openURL(bar.url!.startsWith('http') ? bar.url! : `https://${bar.url}`)}>
+              <Text style={[styles.barName, styles.barNameLink]}>{bar.name}</Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.barName}>{bar.name}</Text>
+          )}
+
+          {/* Days available */}
+          {offerDays.length > 0 && (
+            <Text style={styles.daysText}>{offerDays.join(' • ')}</Text>
+          )}
 
           {/* Deal Summary */}
           {offer && (
@@ -148,15 +187,17 @@ export default function BarDetailScreen() {
             )}
           </Pressable>
 
-          {/* Book A Table */}
-          <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleBookTable}>
-            {({ pressed }) => (
-              <>
-                <Text style={[styles.buttonIcon, pressed && styles.buttonTextPressed]}>✓</Text>
-                <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Book A Table</Text>
-              </>
-            )}
-          </Pressable>
+          {/* Book A Table - only show if table_reservation URL available */}
+          {bar.table_reservation && (
+            <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleBookTable}>
+              {({ pressed }) => (
+                <>
+                  <Text style={[styles.buttonIcon, { color: '#E1B12C' }, pressed && styles.buttonTextPressed]}>✓</Text>
+                  <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Book A Table</Text>
+                </>
+              )}
+            </Pressable>
+          )}
 
           {/* Deal Verification */}
           <Text style={styles.verifyTitle}>Is this deal still live?</Text>
@@ -193,7 +234,7 @@ function Header({ onBack }: { onBack: () => void }) {
       <Text style={styles.logo}>CRAWLER</Text>
       <View style={styles.spacer} />
       <Image
-        source={require('@/assets/images/crawler-logo.png')}
+        source={require('@/assets/images/logo.svg')}
         style={styles.logoImage}
         resizeMode="contain"
       />
@@ -221,6 +262,10 @@ const styles = StyleSheet.create({
   barImage: { width: '100%', height: 230, borderRadius: 12 },
   content: { paddingHorizontal: 16 },
   barName: { fontSize: 24, fontWeight: '500', color: '#0F1113' },
+  barNameLink: { textDecorationLine: 'underline', color: '#1A73E8' },
+  statusBadge: { fontSize: 13, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
+  daysText: { fontSize: 13, color: '#6B7280', marginTop: 4 },
   dealSummary: { fontSize: 16, fontWeight: '500', color: '#57636C', marginTop: 4 },
   dealDescription: { fontSize: 16, fontWeight: '500', color: '#57636C', marginTop: 4 },
   sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 12 },

@@ -3,9 +3,26 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 
+function parseDrinks(drinks: any): string[] {
+  if (!drinks) return [];
+  if (Array.isArray(drinks)) return drinks;
+  if (typeof drinks === 'string') {
+    const trimmed = drinks.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      return trimmed.slice(1, -1).split(',').map((s: string) => s.replace(/^"|"$/g, '').trim()).filter(Boolean);
+    }
+    return [trimmed];
+  }
+  return [];
+}
+
 export interface MapBar extends Bar {
   status: 'live' | 'upcoming' | 'featured';
   deal?: string;
+  drinks?: string[];
+  isLiveNow?: boolean;
+  startTime?: string;
+  endTime?: string;
 }
 
 function getDayOfWeek(): string {
@@ -52,11 +69,15 @@ export function useBars(city: string) {
       .filter((b) => b.lat && b.long)
       .map((b) => {
         const offer = todayOffers.find((o) => o.bar_id === b.id);
-        let status: MapBar['status'] = 'upcoming';
-        if (liveBarIds.has(b.id)) status = 'live';
-        else if (b.is_flash_active) status = 'featured';
+        const offerVal = (offer as any)?.is_top_deal ?? (offer as any)?.top_deal;
+        const isTopDeal = offerVal === true || offerVal === 'true' || offerVal === 'TRUE' || offerVal === 1 || b.is_flash_active;
 
-        return { ...b, status, deal: offer?.['deal summary'] || undefined };
+        let status: MapBar['status'] = 'upcoming';
+        if (isTopDeal) status = 'featured';
+        else if (liveBarIds.has(b.id)) status = 'live';
+
+        const barIsLive = liveBarIds.has(b.id);
+        return { ...b, status, deal: offer?.['deal summary'] || undefined, drinks: parseDrinks((offer as any)?.drinks), isLiveNow: barIsLive, startTime: offer?.start_time || undefined, endTime: offer?.end_time || undefined };
       });
 
     setMapBars(results);

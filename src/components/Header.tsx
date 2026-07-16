@@ -14,7 +14,7 @@ export function Header({ onMenuPress }: Props) {
       <Text style={styles.logo}>CRAWLER</Text>
       <View style={styles.spacer} />
       <Image
-        source={require('@/assets/images/crawler-logo.png')}
+        source={require('@/assets/images/logo.svg')}
         style={styles.logoImage}
         resizeMode="contain"
       />

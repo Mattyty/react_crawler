@@ -6,9 +6,11 @@ interface Props {
   offers: Offer[];
   bars: Bar[];
   onPress: (bar: Bar) => void;
+  topDealBarIds?: Set<number>;
+  distanceMap?: Map<number, string>;
 }
 
-export function LiveNowSection({ offers, bars, onPress }: Props) {
+export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceMap }: Props) {
   if (offers.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -26,18 +28,47 @@ export function LiveNowSection({ offers, bars, onPress }: Props) {
       {offers.map((offer) => {
         const bar = bars.find((b) => b.id === offer.bar_id);
         if (!bar) return null;
+        const isTopDeal = topDealBarIds?.has(bar.id) ?? false;
+        const distance = distanceMap?.get(bar.id);
+
         return (
-          <Pressable key={offer.id} style={({ pressed }) => [styles.liveCard, pressed && styles.pressed]} onPress={() => onPress(bar)}>
+          <Pressable
+            key={offer.id}
+            style={({ pressed }) => [
+              isTopDeal ? styles.topDealCard : styles.liveCard,
+              pressed && (isTopDeal ? styles.pressedTopDeal : styles.pressed),
+            ]}
+            onPress={() => onPress(bar)}
+          >
             {({ pressed }) => (
               <>
-                <View style={styles.gradientOverlay} />
+                {isTopDeal && (
+                  <View style={styles.topDealBadge}>
+                    <Text style={styles.topDealStar}>★</Text>
+                    <Text style={styles.topDealLabel}>TOP DEAL</Text>
+                  </View>
+                )}
                 <Image source={{ uri: bar.image_url || 'https://picsum.photos/80/80' }} style={styles.liveImage} />
                 <View style={styles.liveInfo}>
-                  <Text style={[styles.liveName, pressed && styles.pressedText]}>{bar.name}</Text>
-                  <Text style={[styles.liveDeal, pressed && styles.pressedText]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
-                  <Text style={[styles.liveTime, pressed && styles.pressedText]}>
-                    {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
-                  </Text>
+                  <Text style={[
+                    isTopDeal ? styles.topDealName : styles.liveName,
+                    pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText),
+                  ]}>{bar.name}</Text>
+                  <Text style={[
+                    isTopDeal ? styles.topDealDeal : styles.liveDeal,
+                    pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText),
+                  ]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+                  <View style={styles.bottomRow}>
+                    <Text style={[
+                      isTopDeal ? styles.topDealTime : styles.liveTime,
+                      pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText),
+                    ]}>
+                      {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
+                    </Text>
+                    {distance && (
+                      <Text style={[{ fontSize: 11, color: isTopDeal ? '#121212' : '#E1B12C' }, pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText)]}>{distance}</Text>
+                    )}
+                  </View>
                 </View>
               </>
             )}
@@ -52,6 +83,22 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: '700', paddingHorizontal: 24, paddingTop: 12 },
   liveCard: {
     flexDirection: 'row',
+    backgroundColor: '#121212',
+    borderRadius: 10,
+    marginHorizontal: 12,
+    marginTop: 12,
+    height: 90,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: '#E1B12C',
+  },
+  topDealCard: {
+    flexDirection: 'row',
     backgroundColor: '#E1B12C',
     borderRadius: 10,
     marginHorizontal: 12,
@@ -63,24 +110,36 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 4,
+    borderWidth: 2,
+    borderColor: '#121212',
   },
-  gradientOverlay: {
+  topDealBorder: {
+    borderWidth: 2,
+    borderColor: '#E1B12C',
+  },
+  topDealBadge: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 10,
-    // @ts-ignore - web-only property
-    backgroundImage: 'linear-gradient(135deg, transparent 50%, rgba(18,18,18,0.15) 100%)',
+    top: 6,
+    right: 8,
+    alignItems: 'center',
+    zIndex: 1,
   },
-  pressed: { backgroundColor: '#121212' },
-  pressedText: { color: '#E1B12C' },
+  topDealStar: { fontSize: 12, color: '#121212' },
+  topDealLabel: { fontSize: 8, fontWeight: '700', color: '#121212', letterSpacing: 0.5 },
+  pressed: { backgroundColor: '#E1B12C' },
+  pressedText: { color: '#121212' },
+  pressedTopDeal: { backgroundColor: '#121212' },
+  pressedTopDealText: { color: '#E1B12C' },
+  topDealName: { color: '#121212', fontSize: 16, fontWeight: '700' },
+  topDealDeal: { color: '#121212', fontSize: 14, marginTop: 4 },
+  topDealTime: { color: '#121212', fontSize: 13 },
   liveImage: { width: 80, height: 80, borderRadius: 6, margin: 5 },
-  liveInfo: { flex: 1, justifyContent: 'center', paddingLeft: 12 },
-  liveName: { color: '#121212', fontSize: 16, fontWeight: '700' },
-  liveDeal: { color: '#121212', fontSize: 14, marginTop: 4 },
-  liveTime: { color: '#121212', fontSize: 13, marginTop: 4 },
+  liveInfo: { flex: 1, justifyContent: 'center', paddingLeft: 12, paddingRight: 8 },
+  liveName: { color: '#E1B12C', fontSize: 16, fontWeight: '700' },
+  liveDeal: { color: '#E1B12C', fontSize: 14, marginTop: 4 },
+  bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  liveTime: { color: '#E1B12C', fontSize: 13 },
+  distance: { color: '#E1B12C', fontSize: 11 },
   emptyCard: {
     alignSelf: 'center',
     width: '60%',

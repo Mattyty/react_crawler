@@ -36,7 +36,12 @@ const STATUS_LABELS: Record<MapBar['status'], string> = {
 
 const DEFAULT_CENTRE = { latitude: 53.4808, longitude: -2.2426 };
 
-export function MapScreen() {
+export function MapScreen(_props?: {
+  activeFilters?: Set<string>;
+  onToggleFilter?: (filter: string) => void;
+  onClearFilters?: () => void;
+  filterOptions?: string[];
+}) {
   const { currentCity } = useAppState();
   const city = currentCity || 'Manchester';
   const { mapBars, loading } = useBars(city);

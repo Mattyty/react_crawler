@@ -17,7 +17,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.react_crawler"
     },
     "web": {
       "output": "single",
@@ -28,10 +29,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#121212",
+          "image": "./assets/images/crawler-logo.png",
+          "imageWidth": 150,
+          "resizeMode": "contain",
           "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
+            "image": "./assets/images/crawler-logo.png",
+            "imageWidth": 150,
+            "backgroundColor": "#121212"
           }
         }
       ]
