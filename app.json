@@ -1,8 +1,14 @@
 {
   "expo": {
-    "name": "react_crawler",
-    "slug": "react_crawler",
+    "name": "react-crawler",
+    "slug": "react-crawler",
     "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "434dc5aa-31a2-4120-a9e5-90dbd192f5cc"
+      }
+    },
+    "owner": "tyldem",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "reactcrawler",
