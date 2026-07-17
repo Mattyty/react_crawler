@@ -5,13 +5,11 @@
   "build": {
     "preview": {
       "distribution": "internal",
-      "prebuild": false,
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "prebuild": false,
       "android": {
         "buildType": "app-bundle"
       }
