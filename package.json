@@ -20,6 +20,7 @@
     "expo-system-ui": "~4.0.0",
     "expo-web-browser": "~14.0.0",
     "leaflet": "^1.9.4",
+    "patch-package": "^8.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
@@ -45,7 +46,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "eas-build-pre-build": "node ./scripts/fix-kotlin-version.js",
-    "eas-build-on-complete": "echo Build done"
+    "eas-build-on-complete": "echo Build done",
+    "postinstall": "patch-package"
   },
   "private": true
 }
