@@ -10,7 +10,7 @@
     },
     "owner": "tyldems-team",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/crawler-logo.png",
     "scheme": "reactcrawler",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -18,10 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#121212",
+        "foregroundImage": "./assets/images/crawler-logo.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.react_crawler"
@@ -36,12 +34,12 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#121212",
-          "image": "./assets/images/crawler-logo.png",
-          "imageWidth": 150,
+          "image": "./assets/images/spinner-logo.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
           "android": {
-            "image": "./assets/images/crawler-logo.png",
-            "imageWidth": 150,
+            "image": "./assets/images/spinner-logo.png",
+            "imageWidth": 200,
             "backgroundColor": "#121212"
           }
         }

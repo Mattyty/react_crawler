@@ -11,7 +11,7 @@ export function AppSplash() {
 
       {/* Logo centred */}
       <Image
-        source={require('@/assets/images/crawler-logo.png')}
+        source={require('@/assets/images/spinner-logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />

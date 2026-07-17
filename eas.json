@@ -5,15 +5,13 @@
   "build": {
     "preview": {
       "distribution": "internal",
+      "prebuild": false,
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
-      },
-      "env": {
-        "EAS_BUILD_GRADLE_COMMAND": ":app:assembleRelease"
+        "buildType": "apk"
       }
     },
     "production": {
+      "prebuild": false,
       "android": {
         "buildType": "app-bundle"
       }
