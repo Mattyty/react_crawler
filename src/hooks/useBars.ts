@@ -67,6 +67,14 @@ export function useBars(city: string) {
 
     const results: MapBar[] = cityBars
       .filter((b) => b.lat && b.long)
+      .filter((b) => {
+        // Only show bars with offers that are either live now or coming up later
+        return liveBarIds.has(b.id) || upcomingBarIds.has(b.id) ||
+          todayOffers.some((o) => {
+            const val = (o as any)?.is_top_deal ?? (o as any)?.top_deal;
+            return (val === true || val === 'true' || val === 'TRUE' || val === 1) && o.bar_id === b.id;
+          }) || b.is_flash_active;
+      })
       .map((b) => {
         const offer = todayOffers.find((o) => o.bar_id === b.id);
         const offerVal = (offer as any)?.is_top_deal ?? (offer as any)?.top_deal;
