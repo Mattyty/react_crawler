@@ -29,8 +29,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "./plugins/with-kotlin-version",
-      "./plugins/with-fix-app-build-gradle",
       "expo-router",
       [
         "expo-splash-screen",
