@@ -1,34 +1,38 @@
 const fs = require('fs');
 const path = require('path');
 
+const KOTLIN_VERSION = '2.1.20';
+
 // Fix build.gradle - pin Kotlin version
 const buildGradlePath = path.join(__dirname, '..', 'android', 'build.gradle');
 if (fs.existsSync(buildGradlePath)) {
   let content = fs.readFileSync(buildGradlePath, 'utf8');
-  
-  if (content.includes("classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')")) {
+
+  // Replace any hardcoded Kotlin plugin version
+  const kotlinPluginRegex = /classpath\(['"]org\.jetbrains\.kotlin:kotlin-gradle-plugin(?::[\d.]+)?['"]\)/;
+  if (kotlinPluginRegex.test(content)) {
     content = content.replace(
-      "classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')",
-      "classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21')"
+      kotlinPluginRegex,
+      `classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:${KOTLIN_VERSION}')`
     );
     fs.writeFileSync(buildGradlePath, content);
-    console.log('✅ Fixed build.gradle - pinned Kotlin to 2.0.21');
+    console.log(`✅ Fixed build.gradle - pinned Kotlin to ${KOTLIN_VERSION}`);
   } else {
-    console.log('ℹ️ build.gradle already has Kotlin version pinned');
+    console.log('ℹ️ build.gradle Kotlin plugin classpath not found (may use version catalog)');
   }
 }
 
-// Fix gradle.properties - add kotlinVersion
+// Fix gradle.properties - ensure kotlinVersion is set
 const gradlePropsPath = path.join(__dirname, '..', 'android', 'gradle.properties');
 if (fs.existsSync(gradlePropsPath)) {
   let props = fs.readFileSync(gradlePropsPath, 'utf8');
-  if (!props.includes('kotlinVersion=')) {
-    props += '\nkotlinVersion=2.0.21\n';
-    fs.writeFileSync(gradlePropsPath, props);
-    console.log('✅ Added kotlinVersion=2.0.21 to gradle.properties');
+  if (props.includes('kotlinVersion=')) {
+    props = props.replace(/kotlinVersion=.*/, `kotlinVersion=${KOTLIN_VERSION}`);
   } else {
-    console.log('ℹ️ gradle.properties already has kotlinVersion');
+    props += `\nkotlinVersion=${KOTLIN_VERSION}\n`;
   }
+  fs.writeFileSync(gradlePropsPath, props);
+  console.log(`✅ Set kotlinVersion=${KOTLIN_VERSION} in gradle.properties`);
 }
 
 // Remove enableBundleCompression if present
@@ -46,36 +50,26 @@ if (fs.existsSync(appBuildGradlePath)) {
 const settingsGradlePath = path.join(__dirname, '..', 'android', 'settings.gradle');
 if (fs.existsSync(settingsGradlePath)) {
   let settings = fs.readFileSync(settingsGradlePath, 'utf8');
-  if (!settings.includes('resolutionStrategy')) {
-    // Add resolution strategy at the top of pluginManagement
-    const insertion = `
-pluginManagement {
+  // Update existing version reference if present
+  if (settings.includes('resolutionStrategy')) {
+    settings = settings.replace(/useVersion\(["'][\d.]+["']\)/g, `useVersion("${KOTLIN_VERSION}")`);
+    fs.writeFileSync(settingsGradlePath, settings);
+    console.log(`✅ Updated Kotlin resolution strategy to ${KOTLIN_VERSION}`);
+  } else if (settings.includes('pluginManagement {')) {
+    settings = settings.replace(
+      'pluginManagement {',
+      `pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id == "org.jetbrains.kotlin.android") {
-                useVersion("2.0.21")
-            }
-        }
-    }
-}
-`;
-    // If pluginManagement already exists, inject resolutionStrategy into it
-    if (settings.includes('pluginManagement {')) {
-      settings = settings.replace(
-        'pluginManagement {',
-        `pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "org.jetbrains.kotlin.android") {
-                useVersion("2.0.21")
+                useVersion("${KOTLIN_VERSION}")
             }
         }
     }`
-      );
-    }
+    );
     fs.writeFileSync(settingsGradlePath, settings);
-    console.log('✅ Added Kotlin resolution strategy to settings.gradle');
+    console.log(`✅ Added Kotlin resolution strategy to settings.gradle`);
   }
 }
 
-console.log('✅ Kotlin version fix complete');
+console.log(`✅ Kotlin version fix complete (${KOTLIN_VERSION})`);
