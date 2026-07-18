@@ -14,7 +14,7 @@
     "scheme": "reactcrawler",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/crawler-logo.png"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,6 +29,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "react-native-maps",
+        {
+          "androidGoogleMapsApiKey": "AIzaSyDo9TG7H0t2ACrWHBg6BLhR_oS9DPyKTo8"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

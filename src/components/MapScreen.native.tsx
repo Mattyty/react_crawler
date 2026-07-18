@@ -1,12 +1,33 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
+
+// Error boundary to catch native map crashes gracefully
+class MapErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Text style={{ color: '#E1B12C', fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+            Map unavailable
+          </Text>
+          <Text style={{ color: '#A0A0B0', fontSize: 13, textAlign: 'center' }}>
+            Could not load Google Maps. Please check your API key configuration.
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const CITY_COORDS: Record<string, { latitude: number; longitude: number }> = {
   Manchester: { latitude: 53.4808, longitude: -2.2426 },
@@ -103,6 +124,7 @@ export function MapScreen(_props?: {
   }
 
   return (
+    <MapErrorBoundary>
     <View style={styles.wrapper}>
       <View style={styles.mapContainer}>
         <MapView
@@ -172,6 +194,7 @@ export function MapScreen(_props?: {
         )}
       </View>
     </View>
+    </MapErrorBoundary>
   );
 }
 
