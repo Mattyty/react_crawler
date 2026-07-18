@@ -29,12 +29,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "react-native-maps",
-        {
-          "androidGoogleMapsApiKey": "AIzaSyDo9TG7H0t2ACrWHBg6BLhR_oS9DPyKTo8"
-        }
-      ],
+      "./plugins/with-google-maps-key",
       "expo-router",
       [
         "expo-splash-screen",
