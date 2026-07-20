@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
+    minHeight: '50%',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,

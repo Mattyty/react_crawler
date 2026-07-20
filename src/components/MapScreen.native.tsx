@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Easing, Pressable, Animated as RNAnimated, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { useAppState } from '@/context/AppStateContext';
@@ -37,17 +37,87 @@ const CITY_COORDS: Record<string, { latitude: number; longitude: number }> = {
   Birmingham: { latitude: 52.4862, longitude: -1.8904 },
 };
 
-const PIN_COLORS: Record<MapBar['status'], string> = {
-  live: '#E1B12C',
-  upcoming: '#9CA3AF',
-  featured: '#F59E0B',
+// Pin color logic:
+// - upcoming (not top deal): light grey
+// - live (not top deal): dark brand color
+// - featured + live (top deal AND live): bright yellow + pulse
+// - featured + not live (top deal but coming up): faded yellow
+function getPinColor(bar: MapBar): string {
+  if (bar.status === 'featured' && bar.isLiveNow) return '#E1B12C';
+  if (bar.status === 'featured') return 'rgba(225, 177, 44, 0.45)';
+  if (bar.status === 'live') return '#121212';
+  return '#9CA3AF'; // upcoming
+}
+
+function shouldPulse(bar: MapBar): boolean {
+  return bar.status === 'featured' && !!bar.isLiveNow;
+}
+
+const STATUS_LABELS: Record<MapBar['status'], string> = {
+  live: 'LIVE NOW',
+  upcoming: 'UPCOMING',
+  featured: 'TOP DEAL',
 };
 
-const GLOW_COLORS: Record<MapBar['status'], string> = {
-  live: 'rgba(225, 177, 44, 0.35)',
-  upcoming: 'rgba(156, 163, 175, 0.3)',
-  featured: 'rgba(245, 158, 11, 0.35)',
-};
+const DEFAULT_CENTRE = { latitude: 53.4808, longitude: -2.2426 };
+
+// Animated pin with drop-in and optional pulse
+function AnimatedPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; delay: number }) {
+  const dropAnim = useRef(new RNAnimated.Value(0)).current;
+  const pulseAnim = useRef(new RNAnimated.Value(1)).current;
+
+  useEffect(() => {
+    // Drop animation
+    RNAnimated.timing(dropAnim, {
+      toValue: 1,
+      duration: 400,
+      delay,
+      easing: Easing.out(Easing.back(1.5)),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  useEffect(() => {
+    // Pulse animation for featured + live pins
+    if (shouldPulse(bar)) {
+      const pulse = RNAnimated.loop(
+        RNAnimated.sequence([
+          RNAnimated.timing(pulseAnim, { toValue: 1.3, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          RNAnimated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [bar.status, bar.isLiveNow]);
+
+  const pinColor = getPinColor(bar);
+  const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
+
+  const dropStyle = {
+    opacity: dropAnim,
+    transform: [
+      { translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-30, 0] }) },
+      { scale: shouldPulse(bar) ? pulseAnim : 1 },
+    ],
+  };
+
+  return (
+    <RNAnimated.View style={[styles.markerContainer, dropStyle]}>
+      {showLabel && (
+        <View style={styles.labelBubble}>
+          <Text style={styles.labelText} numberOfLines={1}>{bar.name}</Text>
+        </View>
+      )}
+      <View style={styles.teardropWrapper}>
+        <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]}>
+          <View style={styles.teardropInner} />
+        </View>
+        <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
+      </View>
+    </RNAnimated.View>
+  );
+}
 
 const STATUS_LABELS: Record<MapBar['status'], string> = {
   live: 'LIVE NOW',
@@ -57,7 +127,7 @@ const STATUS_LABELS: Record<MapBar['status'], string> = {
 
 const DEFAULT_CENTRE = { latitude: 53.4808, longitude: -2.2426 };
 
-export function MapScreen(_props?: {
+export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filterOptions }: {
   activeFilters?: Set<string>;
   onToggleFilter?: (filter: string) => void;
   onClearFilters?: () => void;
@@ -70,8 +140,10 @@ export function MapScreen(_props?: {
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(14);
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
+  const showLabels = zoomLevel >= 15;
 
   // Request permission and watch user location
   useEffect(() => {
@@ -92,6 +164,12 @@ export function MapScreen(_props?: {
     return () => {
       subscription?.remove();
     };
+  }, []);
+
+  const handleRegionChange = useCallback((region: { latitudeDelta: number }) => {
+    // Approximate zoom level from latitudeDelta
+    const zoom = Math.round(Math.log(360 / region.latitudeDelta) / Math.LN2);
+    setZoomLevel(zoom);
   }, []);
 
   const handleMarkerPress = useCallback((bar: MapBar) => {
@@ -126,12 +204,45 @@ export function MapScreen(_props?: {
   return (
     <MapErrorBoundary>
     <View style={styles.wrapper}>
+      {/* Map Key */}
+      <View style={styles.mapKey}>
+        <View style={styles.keyItem}>
+          <View style={[styles.keyDot, { backgroundColor: '#E1B12C' }]} />
+          <Text style={styles.keyLabel}>Top Deal (Live)</Text>
+        </View>
+        <View style={styles.keyItem}>
+          <View style={[styles.keyDot, { backgroundColor: 'rgba(225, 177, 44, 0.45)' }]} />
+          <Text style={styles.keyLabel}>Top Deal (Coming Up)</Text>
+        </View>
+        <View style={styles.keyItem}>
+          <View style={[styles.keyDot, { backgroundColor: '#121212' }]} />
+          <Text style={styles.keyLabel}>Live</Text>
+        </View>
+        <View style={styles.keyItem}>
+          <View style={[styles.keyDot, { backgroundColor: '#9CA3AF' }]} />
+          <Text style={styles.keyLabel}>Coming Up</Text>
+        </View>
+      </View>
+
+      {/* Filter Pills */}
+      {filterOptions && filterOptions.length > 0 && onToggleFilter && onClearFilters && (
+        <View style={styles.filterOverlay}>
+          <FilterPills
+            options={filterOptions}
+            activeFilters={activeFilters || new Set()}
+            onToggle={onToggleFilter}
+            onClearAll={onClearFilters}
+          />
+        </View>
+      )}
+
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}
           style={styles.map}
           initialRegion={{ ...centre, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
           onPress={() => setSelectedBar(null)}
+          onRegionChangeComplete={handleRegionChange}
         >
           <UrlTile
             urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -153,16 +264,14 @@ export function MapScreen(_props?: {
           )}
 
           {/* Bar markers */}
-          {mapBars.map((bar) => (
+          {mapBars.map((bar, index) => (
             <Marker
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
+              anchor={{ x: 0.5, y: 1 }}
             >
-              <View style={styles.markerWrapper}>
-                <View style={[styles.markerGlow, { backgroundColor: GLOW_COLORS[bar.status] }]} />
-                <View style={[styles.markerDot, { backgroundColor: PIN_COLORS[bar.status] }]} />
-              </View>
+              <AnimatedPin bar={bar} showLabel={showLabels} delay={index * 60} />
             </Marker>
           ))}
         </MapView>
@@ -175,7 +284,6 @@ export function MapScreen(_props?: {
             </Pressable>
             <View style={styles.cardHeader}>
               <Text style={styles.barName}>{selectedBar.name}</Text>
-              <View style={[styles.statusDot, { backgroundColor: PIN_COLORS[selectedBar.status] }]} />
             </View>
             {selectedBar.deal && (
               <Text style={styles.dealText} numberOfLines={2}>{selectedBar.deal}</Text>
@@ -200,6 +308,38 @@ export function MapScreen(_props?: {
 
 const styles = StyleSheet.create({
   wrapper: { flex: 1, padding: 12 },
+  mapKey: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 10,
+    marginBottom: 6,
+  },
+  keyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  keyDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  keyLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#374151',
+  },
+  filterOverlay: {
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 10,
+    marginBottom: 6,
+  },
   mapContainer: {
     flex: 1,
     borderRadius: 16,
@@ -235,25 +375,64 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 4,
   },
-  // Bar markers
-  markerWrapper: {
-    width: 24,
-    height: 24,
+  // Bar markers - teardrop pin
+  markerContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  labelBubble: {
+    backgroundColor: '#1E1E2E',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 4,
+    maxWidth: 120,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
+  },
+  labelText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  teardropWrapper: {
+    alignItems: 'center',
+    width: 30,
+    height: 40,
+  },
+  teardropHead: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
   },
-  markerGlow: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  teardropInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.7)',
   },
-  markerDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
+  teardropTail: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    marginTop: -2,
   },
   // Floating card
   floatingCard: {
@@ -300,12 +479,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     flex: 1,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginLeft: 8,
   },
   dealText: {
     fontSize: 13,

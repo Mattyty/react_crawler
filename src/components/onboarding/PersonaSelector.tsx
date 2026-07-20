@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 12,
     paddingBottom: 40,
+    minHeight: '50%',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 20,

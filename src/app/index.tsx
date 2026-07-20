@@ -46,15 +46,28 @@ export default function HomeScreen() {
   const [filtering, setFiltering] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Watch user location
+  // Watch user location (native via expo-location, web via navigator.geolocation)
   useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 10000 }
-    );
-    return () => navigator.geolocation.clearWatch(watchId);
+    if (Platform.OS === 'web') {
+      if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 10000 }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      let subscription: Location.LocationSubscription | null = null;
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+        subscription = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.Balanced, distanceInterval: 50 },
+          (loc) => setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude })
+        );
+      })();
+      return () => { subscription?.remove(); };
+    }
   }, []);
 
   const city = currentCity || 'Manchester';
