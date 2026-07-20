@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Easing, Pressable, Animated as RNAnimated, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { FilterPills } from '@/components/FilterPills';
@@ -50,65 +50,23 @@ function getPinColor(bar: MapBar): string {
   return '#9CA3AF'; // upcoming
 }
 
-function shouldPulse(bar: MapBar): boolean {
-  return bar.status === 'featured' && !!bar.isLiveNow;
-}
-
-// Animated pin with drop-in and optional pulse
-function AnimatedPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; delay: number }) {
-  const dropAnim = useRef(new RNAnimated.Value(0)).current;
-  const pulseAnim = useRef(new RNAnimated.Value(1)).current;
-
-  useEffect(() => {
-    // Drop animation
-    RNAnimated.timing(dropAnim, {
-      toValue: 1,
-      duration: 400,
-      delay,
-      easing: Easing.out(Easing.back(1.5)),
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  useEffect(() => {
-    // Pulse animation for featured + live pins
-    if (shouldPulse(bar)) {
-      const pulse = RNAnimated.loop(
-        RNAnimated.sequence([
-          RNAnimated.timing(pulseAnim, { toValue: 1.3, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          RNAnimated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        ])
-      );
-      pulse.start();
-      return () => pulse.stop();
-    }
-  }, [bar.status, bar.isLiveNow]);
-
+// Static map pin
+function MapPin({ bar, showLabel }: { bar: MapBar; showLabel: boolean }) {
   const pinColor = getPinColor(bar);
   const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
 
-  const dropStyle = {
-    opacity: dropAnim,
-    transform: [
-      { translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-30, 0] }) },
-      { scale: pulseAnim },
-    ],
-  };
-
   return (
-    <RNAnimated.View style={[styles.markerContainer, dropStyle]}>
+    <View style={styles.markerContainer}>
       {showLabel && (
         <View style={styles.labelBubble}>
-          <Text style={styles.labelText} numberOfLines={1}>{bar.name}</Text>
+          <Text style={styles.labelText} numberOfLines={1} ellipsizeMode="tail">{bar.name}</Text>
         </View>
       )}
       <View style={styles.teardropWrapper}>
-        <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]}>
-          <View style={styles.teardropInner} />
-        </View>
+        <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
         <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
       </View>
-    </RNAnimated.View>
+    </View>
   );
 }
 
@@ -257,14 +215,14 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           )}
 
           {/* Bar markers */}
-          {mapBars.map((bar, index) => (
+          {mapBars.map((bar) => (
             <Marker
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
               anchor={{ x: 0.5, y: 1 }}
             >
-              <AnimatedPin bar={bar} showLabel={showLabels} delay={index * 60} />
+              <MapPin bar={bar} showLabel={showLabels} />
             </Marker>
           ))}
         </MapView>
@@ -371,15 +329,14 @@ const styles = StyleSheet.create({
   // Bar markers - teardrop pin
   markerContainer: {
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
   },
   labelBubble: {
     backgroundColor: '#1E1E2E',
     borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginBottom: 4,
-    maxWidth: 120,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 3,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 3,
@@ -388,41 +345,33 @@ const styles = StyleSheet.create({
   },
   labelText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
   },
   teardropWrapper: {
     alignItems: 'center',
-    width: 30,
-    height: 40,
+    width: 22,
+    height: 30,
   },
   teardropHead: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2.5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
     borderColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
-  },
-  teardropInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 4,
   },
   teardropTail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
-    borderTopWidth: 10,
+    borderLeftWidth: 5,
+    borderRightWidth: 5,
+    borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -2,
