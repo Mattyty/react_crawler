@@ -74,7 +74,11 @@ export function TopDealsSection({ bars, offers, onPress, liveBarIds }: Props) {
         );
       }}
     />
-      <View style={styles.fadeHint} pointerEvents="none" />
+      <View style={styles.fadeHint} pointerEvents="none">
+        <View style={styles.fadeStep1} />
+        <View style={styles.fadeStep2} />
+        <View style={styles.fadeStep3} />
+      </View>
     </View>
   );
 }
@@ -89,8 +93,19 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width: 32,
-    // @ts-ignore web-only
-    backgroundImage: 'linear-gradient(to right, transparent, rgba(255,255,255,0.9))',
+    flexDirection: 'row' as any,
+  },
+  fadeStep1: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  fadeStep2: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+  },
+  fadeStep3: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   topDealCard: {
     width: 160,

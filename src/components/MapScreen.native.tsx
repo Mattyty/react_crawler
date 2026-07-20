@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Easing, Pressable, Animated as RNAnimated, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { FilterPills } from '@/components/FilterPills';
@@ -50,18 +50,48 @@ function getPinColor(bar: MapBar): string {
   return '#9CA3AF'; // upcoming
 }
 
-// Static map pin
-function MapPin({ bar }: { bar: MapBar }) {
+// Map pin with drop-in animation
+function MapPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; delay: number }) {
   const pinColor = getPinColor(bar);
   const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
+  const dropAnim = useRef(new RNAnimated.Value(0)).current;
+
+  useEffect(() => {
+    RNAnimated.timing(dropAnim, {
+      toValue: 1,
+      duration: 350,
+      delay,
+      easing: Easing.out(Easing.back(1.4)),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const animStyle = {
+    opacity: dropAnim,
+    transform: [{ translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
+  };
+
+  if (showLabel) {
+    return (
+      <RNAnimated.View style={[styles.markerWithLabel, animStyle]}>
+        <View style={styles.labelBubble}>
+          <Text style={styles.labelText}>{bar.name}</Text>
+        </View>
+        <View style={styles.teardropWrapper}>
+          <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
+          <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
+        </View>
+      </RNAnimated.View>
+    );
+  }
 
   return (
-    <View style={styles.markerContainer}>
+    <RNAnimated.View style={[styles.markerContainer, animStyle]}>
       <View style={styles.teardropWrapper}>
         <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
         <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
       </View>
-    </View>
+    </RNAnimated.View>
   );
 }
 
@@ -86,8 +116,10 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(14);
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
+  const showLabels = zoomLevel >= 15;
 
   // Request permission and watch user location
   useEffect(() => {
@@ -108,6 +140,11 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
     return () => {
       subscription?.remove();
     };
+  }, []);
+
+  const handleRegionChange = useCallback((region: { latitudeDelta: number }) => {
+    const zoom = Math.round(Math.log(360 / region.latitudeDelta) / Math.LN2);
+    setZoomLevel(zoom);
   }, []);
 
   const handleMarkerPress = useCallback((bar: MapBar) => {
@@ -180,6 +217,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           style={styles.map}
           initialRegion={{ ...centre, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
           onPress={() => setSelectedBar(null)}
+          onRegionChangeComplete={handleRegionChange}
         >
           <UrlTile
             urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -201,15 +239,14 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           )}
 
           {/* Bar markers */}
-          {mapBars.map((bar) => (
+          {mapBars.map((bar, index) => (
             <Marker
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
               anchor={{ x: 0.5, y: 1 }}
-              title={bar.name}
             >
-              <MapPin bar={bar} />
+              <MapPin bar={bar} showLabel={showLabels} delay={index * 50} />
             </Marker>
           ))}
         </MapView>
@@ -318,6 +355,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 30,
     height: 32,
+  },
+  markerWithLabel: {
+    alignItems: 'center',
+    minWidth: 100,
+    paddingHorizontal: 4,
+  },
+  labelBubble: {
+    backgroundColor: '#1E1E2E',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 3,
+  },
+  labelText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   teardropWrapper: {
     alignItems: 'center',

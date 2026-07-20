@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 interface Props {
   options: string[];
@@ -41,9 +41,11 @@ export function FilterPills({ options, activeFilters, onToggle, onClearAll }: Pr
           })}
         </ScrollView>
         {/* Fade hint on right edge */}
-        {Platform.OS === 'web' && (
-          <View style={styles.fadeHint} pointerEvents="none" />
-        )}
+        <View style={styles.fadeHint} pointerEvents="none">
+          <View style={styles.fadeStep1} />
+          <View style={styles.fadeStep2} />
+          <View style={styles.fadeStep3} />
+        </View>
       </View>
     </View>
   );
@@ -78,8 +80,19 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width: 32,
-    // @ts-ignore web-only
-    backgroundImage: 'linear-gradient(to right, transparent, rgba(255,255,255,0.9))',
+    flexDirection: 'row' as any,
+  },
+  fadeStep1: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  fadeStep2: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+  },
+  fadeStep3: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   pill: {
     paddingHorizontal: 14,

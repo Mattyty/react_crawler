@@ -45,6 +45,7 @@ export default function HomeScreen() {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [filtering, setFiltering] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   // Watch user location (native via expo-location, web via navigator.geolocation)
   useEffect(() => {
@@ -259,7 +260,16 @@ export default function HomeScreen() {
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === 'map' && styles.tabActive]}
-          onPress={() => setActiveTab('map')}
+          onPress={() => {
+            if (activeTab !== 'map') {
+              setMapLoading(true);
+              // Brief delay lets the overlay render before the map mounts
+              setTimeout(() => {
+                setActiveTab('map');
+                setMapLoading(false);
+              }, 400);
+            }
+          }}
         >
           <View style={styles.tabContent}>
             <Text style={styles.tabText}>Map</Text>
@@ -269,9 +279,9 @@ export default function HomeScreen() {
 
       {activeTab === 'bars' ? (
         <View style={styles.scrollWrapper}>
-          {filtering && (
+          {(filtering || mapLoading) && (
             <View style={styles.filteringOverlay}>
-              <ActivityIndicator size="small" color="#FFD200" />
+              <ActivityIndicator size={mapLoading ? 'large' : 'small'} color="#E1B12C" />
             </View>
           )}
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>

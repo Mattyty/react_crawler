@@ -10,16 +10,16 @@
     },
     "owner": "tyldems-team",
     "orientation": "portrait",
-    "icon": "./assets/images/crawler-logo.png",
+    "icon": "./assets/images/appIcon.png",
     "scheme": "reactcrawler",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/crawler-logo.png"
+      "icon": "./assets/images/appIcon.png"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#121212",
-        "foregroundImage": "./assets/images/crawler-logo.png"
+        "foregroundImage": "./assets/images/appIcon.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.react_crawler"
@@ -30,6 +30,12 @@
     },
     "plugins": [
       "./plugins/with-google-maps-key",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Crawler uses your location to show distances to nearby bars."
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
