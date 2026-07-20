@@ -55,13 +55,22 @@ function MapPin({ bar, showLabel }: { bar: MapBar; showLabel: boolean }) {
   const pinColor = getPinColor(bar);
   const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
 
+  if (showLabel) {
+    return (
+      <View style={styles.markerWithLabel}>
+        <View style={styles.labelBubble}>
+          <Text style={styles.labelText}>{bar.name}</Text>
+        </View>
+        <View style={styles.teardropWrapper}>
+          <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
+          <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.markerContainer}>
-      {showLabel && (
-        <View style={styles.labelBubble}>
-          <Text style={styles.labelText} numberOfLines={1} ellipsizeMode="tail">{bar.name}</Text>
-        </View>
-      )}
       <View style={styles.teardropWrapper}>
         <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
         <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
@@ -329,7 +338,13 @@ const styles = StyleSheet.create({
   // Bar markers - teardrop pin
   markerContainer: {
     alignItems: 'center',
-    paddingHorizontal: 2,
+    width: 30,
+    height: 32,
+  },
+  markerWithLabel: {
+    alignItems: 'center',
+    minWidth: 100,
+    paddingHorizontal: 4,
   },
   labelBubble: {
     backgroundColor: '#1E1E2E',
