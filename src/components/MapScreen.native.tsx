@@ -4,6 +4,7 @@ import React, { Component, useCallback, useEffect, useRef, useState } from 'reac
 import { ActivityIndicator, Easing, Pressable, Animated as RNAnimated, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
+import { FilterPills } from '@/components/FilterPills';
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
@@ -90,7 +91,7 @@ function AnimatedPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolea
     opacity: dropAnim,
     transform: [
       { translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-30, 0] }) },
-      { scale: shouldPulse(bar) ? pulseAnim : 1 },
+      { scale: pulseAnim },
     ],
   };
 
