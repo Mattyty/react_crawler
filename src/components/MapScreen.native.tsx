@@ -53,14 +53,6 @@ function shouldPulse(bar: MapBar): boolean {
   return bar.status === 'featured' && !!bar.isLiveNow;
 }
 
-const STATUS_LABELS: Record<MapBar['status'], string> = {
-  live: 'LIVE NOW',
-  upcoming: 'UPCOMING',
-  featured: 'TOP DEAL',
-};
-
-const DEFAULT_CENTRE = { latitude: 53.4808, longitude: -2.2426 };
-
 // Animated pin with drop-in and optional pulse
 function AnimatedPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; delay: number }) {
   const dropAnim = useRef(new RNAnimated.Value(0)).current;
