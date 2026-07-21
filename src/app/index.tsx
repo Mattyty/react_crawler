@@ -1,4 +1,3 @@
-import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -48,42 +47,17 @@ export default function HomeScreen() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapLoading, setMapLoading] = useState(false);
 
-  // Watch user location (native via expo-location, web via navigator.geolocation)
+  // Location is handled by the map tab — distances show there
+  // Web fallback for browser geolocation
   useEffect(() => {
-    if (Platform.OS === 'web') {
-      if (typeof navigator === 'undefined' || !navigator.geolocation) return;
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 10000 }
-      );
-      return () => navigator.geolocation.clearWatch(watchId);
-    } else {
-      let subscription: Location.LocationSubscription | null = null;
-      let mounted = true;
-      (async () => {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted' || !mounted) return;
-
-        // Get immediate position first so distances show quickly
-        try {
-          const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-          if (mounted) {
-            setUserLocation({ lat: current.coords.latitude, lng: current.coords.longitude });
-          }
-        } catch {}
-
-        // Then watch for updates
-        if (!mounted) return;
-        subscription = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.Balanced, distanceInterval: 50 },
-          (loc) => {
-            if (mounted) setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-          }
-        );
-      })();
-      return () => { mounted = false; subscription?.remove(); };
-    }
+    if (Platform.OS !== 'web') return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 10000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   const city = currentCity || 'Manchester';
