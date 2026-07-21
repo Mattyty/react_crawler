@@ -2,7 +2,7 @@ import { Bar, Offer } from '@/lib/types';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-
+import { getBarImage } from '@/lib/fallbackImages';
 interface Props {
   offers: Offer[];
   bars: Bar[];

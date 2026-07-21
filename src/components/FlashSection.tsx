@@ -2,7 +2,7 @@ import { Bar } from '@/lib/types';
 import React from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-
+import { getBarImage } from '@/lib/fallbackImages';
 interface Props {
   bars: Bar[];
   onPress: (bar: Bar) => void;

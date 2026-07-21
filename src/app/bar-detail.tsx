@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconBack, IconStation, IconTime } from '@/components/Icons';
+import { getBarImage } from '@/lib/fallbackImages';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 

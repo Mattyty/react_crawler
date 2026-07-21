@@ -3,6 +3,7 @@ import React from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { IconStation, IconTime } from '@/components/Icons';
+import { getBarImage } from '@/lib/fallbackImages';
 
 interface Props {
   bars: Bar[];
