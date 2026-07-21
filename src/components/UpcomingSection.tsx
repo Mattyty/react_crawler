@@ -2,6 +2,7 @@ import { Bar, Offer } from '@/lib/types';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+
 interface Props {
   offers: Offer[];
   bars: Bar[];
@@ -55,7 +56,7 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
                     <Text style={[styles.topDealLabel, pressed && { color: '#E1B12C' }]}>TOP DEAL</Text>
                   </View>
                 )}
-                <Image source={{ uri: bar.image_url || 'https://picsum.photos/80/80' }} style={styles.liveImage} />
+                <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.liveImage} />
                 <View style={styles.liveInfo}>
                   <Text style={[styles.upcomingName, { color: pressed ? pressedTextColor : nameColor }]}>{bar.name}</Text>
                   <Text style={[styles.upcomingDeal, { color: pressed ? pressedTextColor : dealColor }]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>

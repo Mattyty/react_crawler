@@ -59,15 +59,29 @@ export default function HomeScreen() {
       return () => navigator.geolocation.clearWatch(watchId);
     } else {
       let subscription: Location.LocationSubscription | null = null;
+      let mounted = true;
       (async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') return;
+        if (status !== 'granted' || !mounted) return;
+
+        // Get immediate position first so distances show quickly
+        try {
+          const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          if (mounted) {
+            setUserLocation({ lat: current.coords.latitude, lng: current.coords.longitude });
+          }
+        } catch {}
+
+        // Then watch for updates
+        if (!mounted) return;
         subscription = await Location.watchPositionAsync(
           { accuracy: Location.Accuracy.Balanced, distanceInterval: 50 },
-          (loc) => setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude })
+          (loc) => {
+            if (mounted) setUserLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
+          }
         );
       })();
-      return () => { subscription?.remove(); };
+      return () => { mounted = false; subscription?.remove(); };
     }
   }, []);
 

@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     letterSpacing: 0.8,
     textTransform: 'uppercase' as any,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     marginBottom: 8,
   },
   scrollWrapper: {

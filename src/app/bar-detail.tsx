@@ -118,7 +118,7 @@ export default function BarDetailScreen() {
         {/* Bar Image */}
         <View style={styles.imageWrapper}>
           <Image
-            source={{ uri: bar.image_url || 'https://picsum.photos/seed/929/600' }}
+            source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }}
             style={styles.barImage}
           />
         </View>

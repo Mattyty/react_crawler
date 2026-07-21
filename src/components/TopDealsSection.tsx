@@ -47,7 +47,7 @@ export function TopDealsSection({ bars, offers, onPress, liveBarIds }: Props) {
             {({ pressed }) => (
               <>
                 <View style={styles.imageWrapper}>
-                  <Image source={{ uri: item.image_url || 'https://picsum.photos/160/100' }} style={styles.topDealImage} />
+                  <Image source={{ uri: getBarImage(item.image_url, (offer as any)?.drinks, item.id) }} style={styles.topDealImage} />
                   <View style={styles.statusPill}>
                     <Text style={styles.statusPillText}>{isLive ? 'LIVE' : 'SOON'}</Text>
                     {isLive ? <IconStation size={10} color="#121212" /> : <IconTime size={10} color="#121212" />}

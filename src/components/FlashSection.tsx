@@ -2,6 +2,7 @@ import { Bar } from '@/lib/types';
 import React from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+
 interface Props {
   bars: Bar[];
   onPress: (bar: Bar) => void;
@@ -17,7 +18,7 @@ export function FlashSection({ bars, onPress }: Props) {
       contentContainerStyle={{ paddingHorizontal: 6, paddingTop: 12 }}
       renderItem={({ item }) => (
         <Pressable onPress={() => onPress(item)} style={({ pressed }) => [styles.flashCard, pressed && styles.pressed]}>
-          <Image source={{ uri: item.image_url || 'https://picsum.photos/300/180' }} style={styles.flashImage} />
+          <Image source={{ uri: getBarImage(item.image_url, undefined, item.id) }} style={styles.flashImage} />
           <View style={styles.flashOverlay}>
             <Text style={styles.flashName}>{item.name}</Text>
             <Text style={styles.flashDesc}>{item.flash_description || 'Flash deal!'}</Text>

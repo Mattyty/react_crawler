@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     width: DRAWER_WIDTH,
     height: '100%',
     backgroundColor: '#121212',
-    paddingTop: 60,
+    paddingTop: 100,
     paddingHorizontal: 16,
     position: 'absolute',
     left: 0,

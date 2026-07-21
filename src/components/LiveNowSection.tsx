@@ -2,6 +2,7 @@ import { Bar, Offer } from '@/lib/types';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+
 interface Props {
   offers: Offer[];
   bars: Bar[];
@@ -48,7 +49,7 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
                     <Text style={styles.topDealLabel}>TOP DEAL</Text>
                   </View>
                 )}
-                <Image source={{ uri: bar.image_url || 'https://picsum.photos/80/80' }} style={styles.liveImage} />
+                <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.liveImage} />
                 <View style={styles.liveInfo}>
                   <Text style={[
                     isTopDeal ? styles.topDealName : styles.liveName,
