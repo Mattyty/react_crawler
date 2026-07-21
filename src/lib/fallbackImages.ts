@@ -34,11 +34,23 @@ function pickRandom(arr: string[]): string {
  * @param drinks - The drinks array from the offer (e.g. ["cocktails"] or ["beer", "wine", "cocktails"])
  * @param barId - Used as a seed for consistent picks per bar (so the image doesn't change on re-render)
  */
-export function getBarImage(imageUrl: string | null | undefined, drinks?: string[], barId?: number): string {
+export function getBarImage(imageUrl: string | null | undefined, drinks?: string[] | string | null, barId?: number): string {
   if (imageUrl) return imageUrl;
 
-  // Normalise drinks to lowercase for matching
-  const normalised = (drinks || []).map((d) => d.toLowerCase().trim());
+  // Normalise drinks - handle Postgres array strings and other formats
+  let drinkList: string[] = [];
+  if (Array.isArray(drinks)) {
+    drinkList = drinks;
+  } else if (typeof drinks === 'string') {
+    const trimmed = drinks.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      drinkList = trimmed.slice(1, -1).split(',').map((s) => s.replace(/^"|"$/g, '').trim()).filter(Boolean);
+    } else if (trimmed) {
+      drinkList = [trimmed];
+    }
+  }
+
+  const normalised = drinkList.map((d) => d.toLowerCase().trim());
 
   // If only cocktails
   const hasCocktails = normalised.some((d) => d.includes('cocktail'));
