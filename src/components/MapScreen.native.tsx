@@ -51,7 +51,7 @@ function getPinColor(bar: MapBar): string {
 }
 
 // Map pin with drop-in animation
-function MapPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; delay: number }) {
+function MapPin({ bar, delay }: { bar: MapBar; delay: number }) {
   const pinColor = getPinColor(bar);
   const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
   const dropAnim = useRef(new RNAnimated.Value(0)).current;
@@ -70,20 +70,6 @@ function MapPin({ bar, showLabel, delay }: { bar: MapBar; showLabel: boolean; de
     opacity: dropAnim,
     transform: [{ translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
   };
-
-  if (showLabel) {
-    return (
-      <RNAnimated.View style={[styles.markerWithLabel, animStyle]}>
-        <View style={styles.labelBubble}>
-          <Text style={styles.labelText}>{bar.name}</Text>
-        </View>
-        <View style={styles.teardropWrapper}>
-          <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
-          <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
-        </View>
-      </RNAnimated.View>
-    );
-  }
 
   return (
     <RNAnimated.View style={[styles.markerContainer, animStyle]}>
@@ -116,10 +102,8 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(14);
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
-  const showLabels = zoomLevel >= 15;
 
   // Request permission and watch user location
   useEffect(() => {
@@ -140,11 +124,6 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
     return () => {
       subscription?.remove();
     };
-  }, []);
-
-  const handleRegionChange = useCallback((region: { latitudeDelta: number }) => {
-    const zoom = Math.round(Math.log(360 / region.latitudeDelta) / Math.LN2);
-    setZoomLevel(zoom);
   }, []);
 
   const handleMarkerPress = useCallback((bar: MapBar) => {
@@ -217,7 +196,6 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           style={styles.map}
           initialRegion={{ ...centre, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
           onPress={() => setSelectedBar(null)}
-          onRegionChangeComplete={handleRegionChange}
         >
           <UrlTile
             urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -245,8 +223,9 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
               anchor={{ x: 0.5, y: 1 }}
+              title={bar.name}
             >
-              <MapPin bar={bar} showLabel={showLabels} delay={index * 50} />
+              <MapPin bar={bar} delay={index * 50} />
             </Marker>
           ))}
         </MapView>
@@ -355,29 +334,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 30,
     height: 32,
-  },
-  markerWithLabel: {
-    alignItems: 'center',
-    minWidth: 100,
-    paddingHorizontal: 4,
-  },
-  labelBubble: {
-    backgroundColor: '#1E1E2E',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginBottom: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 3,
-  },
-  labelText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'center',
   },
   teardropWrapper: {
     alignItems: 'center',

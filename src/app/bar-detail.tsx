@@ -145,9 +145,19 @@ export default function BarDetailScreen() {
             <Text style={styles.barName}>{bar.name}</Text>
           )}
 
-          {/* Days available */}
-          {offerDays.length > 0 && (
-            <Text style={styles.daysText}>{offerDays.join(' • ')}</Text>
+          {/* Schedule box */}
+          {(offerDays.length > 0 || offer?.start_time) && (
+            <View style={styles.scheduleCard}>
+              <Text style={styles.scheduleIcon}>🕐</Text>
+              {offer?.start_time && (
+                <Text style={styles.scheduleTime}>
+                  {offer.start_time.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
+                </Text>
+              )}
+              {offerDays.length > 0 && (
+                <Text style={styles.scheduleDays}>{offerDays.join(' • ')}</Text>
+              )}
+            </View>
           )}
 
           {/* Deal Summary */}
@@ -266,7 +276,20 @@ const styles = StyleSheet.create({
   barNameLink: { textDecorationLine: 'underline', color: '#1A73E8' },
   statusBadge: { fontSize: 13, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
-  daysText: { fontSize: 13, color: '#6B7280', marginTop: 4 },
+  scheduleCard: {
+    alignSelf: 'center',
+    width: '60%',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#B0AEAE',
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  scheduleIcon: { fontSize: 24, opacity: 0.4, marginBottom: 8 },
+  scheduleTime: { fontSize: 16, fontWeight: '600', color: '#0F1113', marginBottom: 4 },
+  scheduleDays: { fontSize: 13, color: '#6B7280', textAlign: 'center' },
   dealSummary: { fontSize: 20, fontWeight: '700', color: '#0F1113', marginTop: 8 },
   dealDescription: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 6, lineHeight: 20 },
   sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 12 },
