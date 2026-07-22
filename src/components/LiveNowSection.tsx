@@ -55,7 +55,7 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
                     isTopDeal ? styles.topDealName : styles.liveName,
                     pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText),
                   ]}>{bar.name}</Text>
-                  <Text style={[
+                  <Text numberOfLines={1} style={[
                     isTopDeal ? styles.topDealDeal : styles.liveDeal,
                     pressed && (isTopDeal ? styles.pressedTopDealText : styles.pressedText),
                   ]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>

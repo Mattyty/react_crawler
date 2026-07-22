@@ -148,6 +148,7 @@ export default function BarDetailScreen() {
           {/* Schedule box */}
           {(offerDays.length > 0 || offer?.start_time) && (
             <View style={styles.scheduleCard}>
+              <Text style={styles.scheduleTitle}>Happy Hour Times</Text>
               <Text style={styles.scheduleIcon}>🕐</Text>
               {offer?.start_time && (
                 <Text style={styles.scheduleTime}>
@@ -277,8 +278,7 @@ const styles = StyleSheet.create({
   statusBadge: { fontSize: 13, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
   scheduleCard: {
-    alignSelf: 'center',
-    width: '60%',
+    alignSelf: 'stretch',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#B0AEAE',
@@ -287,13 +287,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
   },
+  scheduleTitle: { fontSize: 16, fontWeight: '700', color: '#0F1113', marginBottom: 8 },
   scheduleIcon: { fontSize: 24, opacity: 0.4, marginBottom: 8 },
   scheduleTime: { fontSize: 16, fontWeight: '600', color: '#0F1113', marginBottom: 4 },
   scheduleDays: { fontSize: 13, color: '#6B7280', textAlign: 'center' },
   dealSummary: { fontSize: 20, fontWeight: '700', color: '#0F1113', marginTop: 8 },
   dealDescription: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 6, lineHeight: 20 },
-  sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 12 },
-  description: { fontSize: 14, fontWeight: '500', marginTop: 12, lineHeight: 20 },
+  sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 24 },
+  description: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 12, lineHeight: 20 },
   verified: { fontSize: 14, marginTop: 12, color: '#333' },
   divider: { height: 1, backgroundColor: '#DBE2E7', marginVertical: 16 },
   address: { fontSize: 14, fontWeight: '500', color: '#57636C' },

@@ -59,7 +59,7 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
                 <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.liveImage} />
                 <View style={styles.liveInfo}>
                   <Text style={[styles.upcomingName, { color: pressed ? pressedTextColor : nameColor }]}>{bar.name}</Text>
-                  <Text style={[styles.upcomingDeal, { color: pressed ? pressedTextColor : dealColor }]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+                  <Text numberOfLines={1} style={[styles.upcomingDeal, { color: pressed ? pressedTextColor : dealColor }]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
                   <View style={styles.bottomRow}>
                     <Text style={[styles.upcomingTime, { color: pressed ? pressedTextColor : timeColor }]}>
                       {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
