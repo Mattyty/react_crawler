@@ -1,14 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    Linking,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -86,6 +86,8 @@ export default function BarDetailScreen() {
   const handleReport = async (isLive: boolean) => {
     if (!isLive) {
       await supabase.from('deal_reports').insert({ bar_name: bar?.name });
+    } else if (offer) {
+      await supabase.from('offers').update({ last_verified: new Date().toISOString() }).eq('id', offer.id);
     }
     setReported(true);
   };
@@ -148,8 +150,7 @@ export default function BarDetailScreen() {
           {/* Schedule box */}
           {(offerDays.length > 0 || offer?.start_time) && (
             <View style={styles.scheduleCard}>
-              <Text style={styles.scheduleTitle}>Happy Hour Times</Text>
-              <Text style={styles.scheduleIcon}>🕐</Text>
+              <Text style={styles.scheduleTitle}>Happy Hour Times...</Text>
               {offer?.start_time && (
                 <Text style={styles.scheduleTime}>
                   {offer.start_time.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
@@ -160,6 +161,8 @@ export default function BarDetailScreen() {
               )}
             </View>
           )}
+
+          <View style={styles.divider} />
 
           {/* Deal Summary */}
           {offer && (
@@ -186,8 +189,7 @@ export default function BarDetailScreen() {
           <View style={styles.divider} />
 
           {/* Address */}
-          <Text style={styles.address}>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
-          <Text style={styles.directions}>Get Directions!</Text>
+          <Text style={styles.address}><Text style={styles.addressLabel}>Address: </Text>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
 
           {/* Take Me There */}
           <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleTakeMeThere}>
@@ -274,29 +276,37 @@ const styles = StyleSheet.create({
   barImage: { width: '100%', height: 230, borderRadius: 12 },
   content: { paddingHorizontal: 16 },
   barName: { fontSize: 24, fontWeight: '500', color: '#0F1113' },
-  barNameLink: { textDecorationLine: 'underline', color: '#1A73E8' },
+  barNameLink: { textDecorationLine: 'underline', color: '#121212' },
   statusBadge: { fontSize: 13, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
   scheduleCard: {
-    alignSelf: 'stretch',
+    alignSelf: 'center',
+    width: '75%',
     borderRadius: 12,
     backgroundColor: '#E1B12C',
-    padding: 16,
+    borderWidth: 2,
+    borderColor: '#121212',
+    padding: 12,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 24,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
-  scheduleTitle: { fontSize: 16, fontWeight: '700', color: '#121212', marginBottom: 8 },
-  scheduleIcon: { fontSize: 24, marginBottom: 8 },
+  scheduleTitle: { fontSize: 16, fontWeight: '700', color: '#121212', marginBottom: 6 },
   scheduleTime: { fontSize: 16, fontWeight: '600', color: '#121212', marginBottom: 4 },
   scheduleDays: { fontSize: 13, color: '#121212', textAlign: 'center' },
-  dealSummary: { fontSize: 20, fontWeight: '700', color: '#0F1113', marginTop: 8 },
-  dealDescription: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 6, lineHeight: 20 },
+  dealSummary: { fontSize: 24, fontWeight: '600', color: '#0F1113', marginTop: 8 },
+  dealDescription: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 12, lineHeight: 20 },
   sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 24 },
   description: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 12, lineHeight: 20 },
   verified: { fontSize: 14, marginTop: 12, color: '#333' },
   divider: { height: 1, backgroundColor: '#DBE2E7', marginVertical: 16 },
   address: { fontSize: 14, fontWeight: '500', color: '#57636C' },
+  addressLabel: { fontWeight: '700', color: '#0F1113' },
   directions: { fontSize: 14, fontWeight: '500', color: '#57636C', marginTop: 8 },
   button: {
     flexDirection: 'row',

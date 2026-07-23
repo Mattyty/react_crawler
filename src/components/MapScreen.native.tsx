@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Easing, Pressable, Animated as RNAnimated, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { FilterPills } from '@/components/FilterPills';
@@ -50,34 +50,18 @@ function getPinColor(bar: MapBar): string {
   return '#9CA3AF'; // upcoming
 }
 
-// Map pin with drop-in animation
-function MapPin({ bar, delay }: { bar: MapBar; delay: number }) {
+// Static map pin
+function MapPin({ bar }: { bar: MapBar }) {
   const pinColor = getPinColor(bar);
   const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
-  const dropAnim = useRef(new RNAnimated.Value(0)).current;
-
-  useEffect(() => {
-    RNAnimated.timing(dropAnim, {
-      toValue: 1,
-      duration: 350,
-      delay,
-      easing: Easing.out(Easing.back(1.4)),
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const animStyle = {
-    opacity: dropAnim,
-    transform: [{ translateY: dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
-  };
 
   return (
-    <RNAnimated.View style={[styles.markerContainer, animStyle]}>
+    <View style={styles.markerContainer}>
       <View style={styles.teardropWrapper}>
         <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
         <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
       </View>
-    </RNAnimated.View>
+    </View>
   );
 }
 
@@ -197,11 +181,13 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           initialRegion={{ ...centre, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
           onPress={() => setSelectedBar(null)}
         >
-          <UrlTile
-            urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            maximumZ={19}
-            flipY={false}
-          />
+          {Platform.OS === 'android' && (
+            <UrlTile
+              urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              maximumZ={19}
+              flipY={false}
+            />
+          )}
 
           {/* User location blue dot */}
           {userLocation && (
@@ -225,7 +211,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               anchor={{ x: 0.5, y: 1 }}
               title={bar.name}
             >
-              <MapPin bar={bar} delay={index * 50} />
+              <MapPin bar={bar} />
             </Marker>
           ))}
         </MapView>

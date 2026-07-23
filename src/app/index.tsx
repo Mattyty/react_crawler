@@ -85,15 +85,24 @@ export default function HomeScreen() {
     const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now);
 
     const topDealBarIds = new Set(
-      cityOffers.filter((o) => {
+      todayOffers.filter((o) => {
         const val = (o as any).is_top_deal ?? (o as any).top_deal;
-        return val === true || val === 'true' || val === 'TRUE' || val === 1;
+        const isTopDeal = val === true || val === 'true' || val === 'TRUE' || val === 1;
+        if (!isTopDeal) return false;
+        // Only include if live now or coming up (not expired)
+        const isLive = o.start_time && o.end_time && o.start_time <= now && o.end_time >= now;
+        const isUpcoming = o.start_time && o.start_time > now;
+        return isLive || isUpcoming;
       }).map((o) => o.bar_id)
     );
     const topDeals = cityBars.filter((b) => topDealBarIds.has(b.id));
-    const topOffers = cityOffers.filter((o) => {
+    const topOffers = todayOffers.filter((o) => {
       const val = (o as any).is_top_deal ?? (o as any).top_deal;
-      return val === true || val === 'true' || val === 'TRUE' || val === 1;
+      const isTopDeal = val === true || val === 'true' || val === 'TRUE' || val === 1;
+      if (!isTopDeal) return false;
+      const isLive = o.start_time && o.end_time && o.start_time <= now && o.end_time >= now;
+      const isUpcoming = o.start_time && o.start_time > now;
+      return isLive || isUpcoming;
     });
 
     setBars(cityBars);
