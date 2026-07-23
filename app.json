@@ -40,14 +40,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#121212",
+          "backgroundColor": "#181818",
           "image": "./assets/images/spinner-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "android": {
             "image": "./assets/images/spinner-logo.png",
             "imageWidth": 200,
-            "backgroundColor": "#121212"
+            "backgroundColor": "#181818"
           }
         }
       ]
