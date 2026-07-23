@@ -166,7 +166,10 @@ export default function BarDetailScreen() {
 
           {/* Deal Summary */}
           {offer && (
-            <Text style={styles.dealSummary}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+            <>
+              <Text style={styles.dealSummary}>Happy Hour Deal:</Text>
+              <Text style={styles.dealDescription}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+            </>
           )}
 
           {/* Deal Description */}
@@ -232,7 +235,7 @@ export default function BarDetailScreen() {
             </View>
           )}
 
-          <View style={{ height: 40 }} />
+          <View style={{ height: 120 }} />
         </View>
       </ScrollView>
     </SafeAreaView>

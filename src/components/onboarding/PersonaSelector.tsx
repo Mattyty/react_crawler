@@ -14,9 +14,10 @@ const PERSONAS = [
 interface Props {
   visible: boolean;
   onDone: () => void;
+  dismissable?: boolean;
 }
 
-export function PersonaSelector({ visible, onDone }: Props) {
+export function PersonaSelector({ visible, onDone, dismissable }: Props) {
   const { setUserPersona } = useAppState();
 
   const selectPersona = (persona: string) => {
@@ -26,8 +27,8 @@ export function PersonaSelector({ visible, onDone }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+      <Pressable style={styles.backdrop} onPress={dismissable ? onDone : undefined}>
+        <View style={styles.sheet} onStartShouldSetResponder={() => true}>
           <Text style={styles.title}>Customize Your Feed.{'\n'}What Brings You To Town?</Text>
           {PERSONAS.map((p) => (
             <Pressable key={p.name} style={styles.option} onPress={() => selectPersona(p.name)}>
@@ -36,7 +37,7 @@ export function PersonaSelector({ visible, onDone }: Props) {
             </Pressable>
           ))}
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }

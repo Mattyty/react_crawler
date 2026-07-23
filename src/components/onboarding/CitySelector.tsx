@@ -12,9 +12,10 @@ const CITIES = [
 interface Props {
   visible: boolean;
   onDone: () => void;
+  dismissable?: boolean;
 }
 
-export function CitySelector({ visible, onDone }: Props) {
+export function CitySelector({ visible, onDone, dismissable }: Props) {
   const { setCurrentCity } = useAppState();
 
   const selectCity = (city: string) => {
@@ -24,8 +25,8 @@ export function CitySelector({ visible, onDone }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+      <Pressable style={styles.backdrop} onPress={dismissable ? onDone : undefined}>
+        <View style={styles.sheet} onStartShouldSetResponder={() => true}>
           <Text style={styles.title}>Select Your City:</Text>
           {CITIES.map((city) => (
             <Pressable key={city.name} style={styles.option} onPress={() => selectCity(city.name)}>
@@ -34,7 +35,7 @@ export function CitySelector({ visible, onDone }: Props) {
             </Pressable>
           ))}
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }

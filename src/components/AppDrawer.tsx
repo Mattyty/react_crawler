@@ -51,8 +51,8 @@ export function AppDrawer({ visible, onClose }: Props) {
 
   if (!mounted) return (
     <>
-      <CitySelector visible={showCity} onDone={() => setShowCity(false)} />
-      <PersonaSelector visible={showPersona} onDone={() => setShowPersona(false)} />
+      <CitySelector visible={showCity} onDone={() => setShowCity(false)} dismissable />
+      <PersonaSelector visible={showPersona} onDone={() => setShowPersona(false)} dismissable />
       <AboutUs visible={showAbout} onClose={() => setShowAbout(false)} />
     </>
   );
@@ -121,8 +121,8 @@ export function AppDrawer({ visible, onClose }: Props) {
         </Animated.View>
       </View>
 
-      <CitySelector visible={showCity} onDone={() => setShowCity(false)} />
-      <PersonaSelector visible={showPersona} onDone={() => setShowPersona(false)} />
+      <CitySelector visible={showCity} onDone={() => setShowCity(false)} dismissable />
+      <PersonaSelector visible={showPersona} onDone={() => setShowPersona(false)} dismissable />
       <AboutUs visible={showAbout} onClose={() => setShowAbout(false)} />
     </>
   );
