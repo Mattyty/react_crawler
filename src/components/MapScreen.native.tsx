@@ -89,6 +89,24 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
 
+  // Filter map bars based on active filters
+  const filteredBars = React.useMemo(() => {
+    if (!activeFilters || activeFilters.size === 0) return mapBars;
+    return mapBars.filter((bar) => {
+      const neighbourhoodMatch = bar.neighborhood && activeFilters.has(bar.neighborhood.trim());
+      const drinkMatch = bar.drinks && bar.drinks.some((d) => activeFilters.has(d));
+
+      const allNeighbourhoods = new Set(mapBars.map((b) => b.neighborhood?.trim()).filter(Boolean));
+      const activeNeighbourhoods = Array.from(activeFilters).filter((f) => allNeighbourhoods.has(f));
+      const activeDrinks = Array.from(activeFilters).filter((f) => !allNeighbourhoods.has(f));
+
+      const nMatch = activeNeighbourhoods.length === 0 || neighbourhoodMatch;
+      const dMatch = activeDrinks.length === 0 || drinkMatch;
+
+      return nMatch && dMatch;
+    });
+  }, [mapBars, activeFilters]);
+
   // Request permission and watch user location
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
@@ -203,7 +221,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           )}
 
           {/* Bar markers */}
-          {mapBars.map((bar, index) => (
+          {filteredBars.map((bar, index) => (
             <Marker
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}

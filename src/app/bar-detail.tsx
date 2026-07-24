@@ -164,17 +164,14 @@ export default function BarDetailScreen() {
 
           <View style={styles.divider} />
 
-          {/* Deal Summary */}
+          {/* Happy Hour Deal */}
           {offer && (
             <>
               <Text style={styles.dealSummary}>Happy Hour Deal:</Text>
-              <Text style={styles.dealDescription}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+              {offer.deal_description && (
+                <Text style={styles.dealDescription}>{offer.deal_description}</Text>
+              )}
             </>
-          )}
-
-          {/* Deal Description */}
-          {offer?.deal_description && (
-            <Text style={styles.dealDescription}>{offer.deal_description}</Text>
           )}
 
           {/* Bar Vibe */}
