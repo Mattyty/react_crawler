@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/appIcon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.react_crawler"
+      "package": "com.citycrawler.app"
     },
     "web": {
       "output": "single",
