@@ -73,11 +73,14 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     borderWidth: 1,
     borderColor: '#E1B12C',
+    alignSelf: 'center',
+    width: '90%',
   },
   optionImage: {
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
+    resizeMode: 'cover' as any,
   },
   optionOverlay: {
     ...StyleSheet.absoluteFillObject,

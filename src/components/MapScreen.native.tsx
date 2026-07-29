@@ -60,7 +60,6 @@ function MapPin({ bar }: { bar: MapBar }) {
     <View style={styles.markerContainer}>
       <View style={styles.teardropWrapper}>
         <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
-        <View style={[styles.teardropTail, { borderTopColor: pinColor }]} />
       </View>
     </View>
   );
@@ -227,11 +226,9 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
-              anchor={{ x: 0.5, y: 1 }}
               title={bar.name}
-            >
-              <MapPin bar={bar} />
-            </Marker>
+              pinColor={getPinColor(bar)}
+            />
           ))}
         </MapView>
 
@@ -346,13 +343,17 @@ const styles = StyleSheet.create({
   },
   teardropWrapper: {
     alignItems: 'center',
-    width: 30,
-    height: 40,
+    width: 28,
+    height: 38,
   },
   teardropHead: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderTopLeftRadius: 13,
+    borderTopRightRadius: 13,
+    borderBottomLeftRadius: 13,
+    borderBottomRightRadius: 2,
     borderWidth: 2,
     borderColor: '#fff',
     shadowColor: '#000',
@@ -360,21 +361,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
     elevation: 4,
+    transform: [{ rotate: '45deg' }],
   },
   teardropTail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
-    borderTopWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    marginTop: -2,
   },
   // Floating card
   floatingCard: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 32,
     left: 16,
     right: 16,
     backgroundColor: '#1E1E2E',

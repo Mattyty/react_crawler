@@ -19,7 +19,7 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
       <View style={styles.emptyCard}>
         <Text style={styles.emptyIcon}>🕐</Text>
         <Text style={styles.emptyText}>
-          There are no Happy Hours running right now. Check back shortly!
+          There are no Happy Hours running right now. Check below, or use the search bar to find out when your favourite bar runs their Happy Hour!!
         </Text>
       </View>
     );
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    height: 110,
+    height: 126,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -155,11 +155,11 @@ const styles = StyleSheet.create({
     width: '60%',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#B0AEAE',
+    borderColor: '#E1B12C',
     padding: 16,
     alignItems: 'center',
     marginTop: 12,
   },
-  emptyIcon: { fontSize: 24, opacity: 0.4, marginBottom: 8 },
-  emptyText: { textAlign: 'center', opacity: 0.7, fontSize: 14 },
+  emptyIcon: { fontSize: 24, opacity: 0.8, marginBottom: 8 },
+  emptyText: { textAlign: 'center', color: '#E1B12C', fontSize: 14 },
 });
