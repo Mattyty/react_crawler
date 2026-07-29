@@ -51,20 +51,6 @@ function getPinColor(bar: MapBar): string {
   return '#9CA3AF'; // upcoming
 }
 
-// Static map pin
-function MapPin({ bar }: { bar: MapBar }) {
-  const pinColor = getPinColor(bar);
-  const borderColor = bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff';
-
-  return (
-    <View style={styles.markerContainer}>
-      <View style={styles.teardropWrapper}>
-        <View style={[styles.teardropHead, { backgroundColor: pinColor, borderColor }]} />
-      </View>
-    </View>
-  );
-}
-
 const STATUS_LABELS: Record<MapBar['status'], string> = {
   live: 'LIVE NOW',
   upcoming: 'UPCOMING',
@@ -227,8 +213,10 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
               title={bar.name}
-              pinColor={getPinColor(bar)}
-            />
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={[styles.pinDot, { backgroundColor: getPinColor(bar), borderColor: bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff' }]} />
+            </Marker>
           ))}
         </MapView>
 
@@ -335,37 +323,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 4,
   },
-  // Bar markers - teardrop pin
-  markerContainer: {
-    alignItems: 'center',
-    width: 40,
-    height: 44,
-  },
-  teardropWrapper: {
-    alignItems: 'center',
-    width: 28,
-    height: 38,
-  },
-  teardropHead: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderTopLeftRadius: 13,
-    borderTopRightRadius: 13,
-    borderBottomLeftRadius: 13,
-    borderBottomRightRadius: 2,
-    borderWidth: 2,
+  // Bar markers
+  pinDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 3,
     borderColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
     elevation: 4,
-    transform: [{ rotate: '45deg' }],
-  },
-  teardropTail: {
-    width: 0,
-    height: 0,
   },
   // Floating card
   floatingCard: {
