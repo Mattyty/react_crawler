@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Crawler",
+    "name": "TCU",
     "slug": "react-crawler",
     "version": "1.0.0",
     "extra": {
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/images/appIcon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.citycrawler.app"
+      "package": "com.thecityuncovered.app"
     },
     "web": {
       "output": "single",
@@ -40,14 +40,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#181818",
+          "backgroundColor": "#141417",
           "image": "./assets/images/spinner-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "android": {
             "image": "./assets/images/spinner-logo.png",
             "imageWidth": 200,
-            "backgroundColor": "#181818"
+            "backgroundColor": "#141417"
           }
         }
       ]

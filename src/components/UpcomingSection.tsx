@@ -2,7 +2,9 @@ import { Bar, Offer } from '@/lib/types';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { IconTime } from '@/components/Icons';
 import { getBarImage } from '@/lib/fallbackImages';
+
 interface Props {
   offers: Offer[];
   bars: Bar[];
@@ -43,29 +45,35 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
           <Pressable
             key={offer.id}
             style={({ pressed }) => [
-              styles.upcomingCard,
-              { backgroundColor: pressed ? pressedBg : cardBg, borderWidth: 2, borderColor: isTopDeal ? '#121212' : '#121212' },
+              styles.card,
+              isTopDeal && styles.cardGlow,
+              pressed && styles.cardPressed,
             ]}
             onPress={() => onPress(bar)}
           >
             {({ pressed }) => (
               <>
+                <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.cardImage} />
+                <View style={styles.cardOverlay} />
                 {isTopDeal && (
                   <View style={styles.topDealBadge}>
-                    <Text style={[styles.topDealStar, pressed && { color: '#E1B12C' }]}>★</Text>
-                    <Text style={[styles.topDealLabel, pressed && { color: '#E1B12C' }]}>TOP DEAL</Text>
+                    <Text style={styles.topDealStar}>★</Text>
+                    <Text style={styles.topDealLabel}>TOP DEAL</Text>
                   </View>
                 )}
-                <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.liveImage} />
-                <View style={styles.liveInfo}>
-                  <Text style={[styles.upcomingName, { color: pressed ? pressedTextColor : nameColor }]}>{bar.name}</Text>
-                  <Text numberOfLines={1} style={[styles.upcomingDeal, { color: pressed ? pressedTextColor : dealColor }]}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
+                <View style={styles.cardContent}>
+                  <View style={styles.statusPill}>
+                    <Text style={styles.statusPillText}>SOON</Text>
+                    <IconTime size={10} color="#121212" />
+                  </View>
+                  <Text style={styles.cardName}>{bar.name}</Text>
+                  <Text numberOfLines={1} style={styles.cardDeal}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
                   <View style={styles.bottomRow}>
-                    <Text style={[styles.upcomingTime, { color: pressed ? pressedTextColor : timeColor }]}>
+                    <Text style={styles.cardTime}>
                       {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
                     </Text>
                     {distance && (
-                      <Text style={[styles.distance, { color: pressed ? pressedTextColor : '#121212' }]}>{distance}</Text>
+                      <Text style={styles.cardDistance}>{distance}</Text>
                     )}
                   </View>
                 </View>
@@ -79,22 +87,37 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
 }
 
 const styles = StyleSheet.create({
-  upcomingCard: {
-    flexDirection: 'row',
+  card: {
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    paddingVertical: 6,
+    height: 110,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  topDealBorder: {
-    borderWidth: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+    position: 'relative' as any,
+    borderWidth: 1,
     borderColor: '#E1B12C',
+  },
+  cardPressed: { opacity: 0.85 },
+  cardGlow: {
+    shadowColor: '#E1B12C',
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
+  cardImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  cardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(60,60,60,0.8)',
   },
   topDealBadge: {
     position: 'absolute',
@@ -103,15 +126,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  topDealStar: { fontSize: 12, color: '#121212' },
-  topDealLabel: { fontSize: 8, fontWeight: '700', color: '#121212', letterSpacing: 0.5 },
-  liveImage: { width: 80, height: 80, borderRadius: 6, margin: 5 },
-  liveInfo: { flex: 1, justifyContent: 'center', paddingLeft: 12, paddingRight: 8 },
-  upcomingName: { fontSize: 16, fontWeight: '700' },
-  upcomingDeal: { fontSize: 14, marginTop: 4 },
+  topDealStar: { fontSize: 12, color: '#E1B12C' },
+  topDealLabel: { fontSize: 8, fontWeight: '700', color: '#E1B12C', letterSpacing: 0.5 },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  statusPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E1B12C',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  statusPillText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#121212',
+    letterSpacing: 0.5,
+  },
+  cardName: { color: '#E1B12C', fontSize: 16, fontWeight: '700' },
+  cardDeal: { color: '#FFFFFF', fontSize: 13, marginTop: 4 },
   bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
-  upcomingTime: { fontSize: 13 },
-  distance: { fontSize: 11 },
+  cardTime: { color: '#E1B12C', fontSize: 12 },
+  cardDistance: { color: '#FFFFFF', fontSize: 11 },
   emptyCard: {
     alignSelf: 'center',
     width: '60%',

@@ -1,12 +1,13 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { FilterPills } from '@/components/FilterPills';
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
+import { getBarImage } from '@/lib/fallbackImages';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 
 // Error boundary to catch native map crashes gracefully
@@ -240,6 +241,10 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
             <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
               <Text style={styles.closeText}>✕</Text>
             </Pressable>
+            <Image
+              source={{ uri: getBarImage(selectedBar.image_url, selectedBar.drinks, selectedBar.id) }}
+              style={styles.floatingCardImage}
+            />
             <View style={styles.cardHeader}>
               <Text style={styles.barName}>{selectedBar.name}</Text>
             </View>
@@ -336,18 +341,18 @@ const styles = StyleSheet.create({
   // Bar markers - teardrop pin
   markerContainer: {
     alignItems: 'center',
-    width: 30,
-    height: 32,
+    width: 40,
+    height: 44,
   },
   teardropWrapper: {
     alignItems: 'center',
-    width: 22,
-    height: 30,
+    width: 30,
+    height: 40,
   },
   teardropHead: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: '#fff',
     shadowColor: '#000',
@@ -359,9 +364,9 @@ const styles = StyleSheet.create({
   teardropTail: {
     width: 0,
     height: 0,
-    borderLeftWidth: 5,
-    borderRightWidth: 5,
-    borderTopWidth: 8,
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -2,
@@ -382,6 +387,12 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(225, 177, 44, 0.2)',
+  },
+  floatingCardImage: {
+    width: '100%',
+    height: 80,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   closeButton: {
     position: 'absolute',

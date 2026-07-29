@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FilterPills } from '@/components/FilterPills';
 import { IconStation, IconTime } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
+import { getBarImage } from '@/lib/fallbackImages';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -154,15 +155,15 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
         const color = PIN_COLORS[bar.status];
         const glow = GLOW_COLORS[bar.status];
         const strokeColor = bar.status === 'live' ? '#E1B12C' : 'rgba(255,255,255,0.8)';
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="11" fill="${glow}" />
           <circle cx="12" cy="12" r="7" fill="${color}" stroke="${strokeColor}" stroke-width="2"/>
         </svg>`;
         const icon = L.divIcon({
           html: svg,
           className: '',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
         });
 
         const marker = L.marker([bar.lat!, bar.long!], { icon }).addTo(map);
@@ -271,6 +272,10 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
             <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
               <Text style={styles.closeText}>✕</Text>
             </Pressable>
+            <Image
+              source={{ uri: getBarImage(selectedBar.image_url, selectedBar.drinks, selectedBar.id) }}
+              style={styles.floatingCardImage}
+            />
             <View style={styles.cardHeader}>
               <Text style={styles.barName}>{selectedBar.name}</Text>
               <View style={[styles.statusDot, { backgroundColor: PIN_COLORS[selectedBar.status] }]} />
@@ -370,6 +375,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(225, 177, 44, 0.2)',
     position: 'relative' as any,
+  },
+  floatingCardImage: {
+    width: '100%',
+    height: 80,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   closeButton: {
     position: 'absolute' as any,

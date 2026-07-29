@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   drawer: {
     width: DRAWER_WIDTH,
     height: '100%',
-    backgroundColor: '#121212',
+    backgroundColor: '#141417',
     paddingTop: 100,
     paddingHorizontal: 16,
     position: 'absolute',

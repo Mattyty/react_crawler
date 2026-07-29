@@ -1,14 +1,13 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { IconBriefcase, IconCamera, IconGraduation, IconHome } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
 
 const PERSONAS = [
-  { name: 'Student', icon: <IconGraduation size={22} color="#121212" /> },
-  { name: 'Work', icon: <IconBriefcase size={22} color="#121212" /> },
-  { name: 'Local', icon: <IconHome size={22} color="#121212" /> },
-  { name: 'Visitor', icon: <IconCamera size={22} color="#121212" /> },
+  { name: 'Student', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/students.png' },
+  { name: 'Work', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/work.png' },
+  { name: 'Local', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/resident.png' },
+  { name: 'Visitor', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/visit.png' },
 ];
 
 interface Props {
@@ -29,10 +28,11 @@ export function PersonaSelector({ visible, onDone, dismissable }: Props) {
     <Modal visible={visible} transparent animationType="slide">
       <Pressable style={styles.backdrop} onPress={dismissable ? onDone : undefined}>
         <View style={styles.sheet} onStartShouldSetResponder={() => true}>
-          <Text style={styles.title}>Customize Your Feed.{'\n'}What Brings You To Town?</Text>
+          <Text style={styles.title}>What Brings You To Town?</Text>
           {PERSONAS.map((p) => (
             <Pressable key={p.name} style={styles.option} onPress={() => selectPersona(p.name)}>
-              <View style={styles.iconWrap}>{p.icon}</View>
+              <Image source={{ uri: p.image }} style={styles.optionImage} />
+              <View style={styles.optionOverlay} />
               <Text style={styles.optionText}>{p.name}</Text>
             </Pressable>
           ))}
@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: '#121212',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 12,
+    padding: 16,
     paddingBottom: 40,
     minHeight: '50%',
     justifyContent: 'center',
@@ -62,23 +62,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginVertical: 24,
+    color: '#E1B12C',
   },
   option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E2E2',
-    height: 55,
+    height: 80,
     marginBottom: 12,
-    paddingHorizontal: 16,
-    borderRadius: 4,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative' as any,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+    borderWidth: 1,
+    borderColor: '#E1B12C',
   },
-  iconWrap: {
-    width: 28,
-    marginRight: 12,
-    alignItems: 'center',
+  optionImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  optionOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
   optionText: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#E1B12C',
+    letterSpacing: 1.5,
   },
 });

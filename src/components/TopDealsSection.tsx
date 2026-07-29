@@ -42,29 +42,28 @@ export function TopDealsSection({ bars, offers, onPress, liveBarIds }: Props) {
             onPress={() => onPress(item)}
             style={({ pressed }) => [
               styles.topDealCard,
-              { backgroundColor: pressed ? pressedBg : bgColor, borderWidth: 2, borderColor },
+              pressed && styles.cardPressed,
             ]}
           >
             {({ pressed }) => (
               <>
-                <View style={styles.imageWrapper}>
-                  <Image source={{ uri: getBarImage(item.image_url, (offer as any)?.drinks, item.id) }} style={styles.topDealImage} />
-                  <View style={styles.statusPill}>
-                    <Text style={styles.statusPillText}>{isLive ? 'LIVE' : 'SOON'}</Text>
-                    {isLive ? <IconStation size={10} color="#121212" /> : <IconTime size={10} color="#121212" />}
-                  </View>
+                <Image source={{ uri: getBarImage(item.image_url, (offer as any)?.drinks, item.id) }} style={styles.topDealImage} />
+                <View style={styles.cardOverlay} />
+                <View style={styles.statusPill}>
+                  <Text style={styles.statusPillText}>{isLive ? 'LIVE' : 'SOON'}</Text>
+                  {isLive ? <IconStation size={10} color="#121212" /> : <IconTime size={10} color="#121212" />}
                 </View>
                 <View style={styles.textArea}>
-                  <Text style={[styles.topDealName, { color: pressed ? pressedText : textColor }]} numberOfLines={1}>
+                  <Text style={styles.topDealName} numberOfLines={1}>
                     {item.name}
                   </Text>
                   {offer?.['deal summary'] && (
-                    <Text style={[styles.topDealDeal, { color: pressed ? pressedText : textColor }]} numberOfLines={1}>
+                    <Text style={styles.topDealDeal} numberOfLines={1}>
                       {offer['deal summary']}
                     </Text>
                   )}
                   {offer?.start_time && (
-                    <Text style={[styles.topDealTime, { color: pressed ? pressedText : textColor }]}>
+                    <Text style={styles.topDealTime}>
                       {offer.start_time.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
                     </Text>
                   )}
@@ -98,15 +97,15 @@ const styles = StyleSheet.create({
   },
   fadeStep1: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(18,18,18,0.3)',
   },
   fadeStep2: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: 'rgba(18,18,18,0.6)',
   },
   fadeStep3: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(18,18,18,0.9)',
   },
   topDealCard: {
     width: 160,
@@ -119,9 +118,13 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E1B12C',
+    position: 'relative' as any,
   },
-  topDealImage: { width: '100%', height: 100, borderTopLeftRadius: 12, borderTopRightRadius: 12 },
-  imageWrapper: { position: 'relative' as any },
+  cardPressed: { opacity: 0.85 },
+  topDealImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+  cardOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.65)' },
   statusPill: {
     position: 'absolute' as any,
     top: 6,
@@ -135,6 +138,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
+    zIndex: 1,
   },
   statusPillText: {
     fontSize: 9,
@@ -142,8 +146,8 @@ const styles = StyleSheet.create({
     color: '#121212',
     letterSpacing: 0.5,
   },
-  textArea: { flex: 1, paddingHorizontal: 8, paddingVertical: 6, justifyContent: 'center' },
-  topDealName: { fontSize: 13, fontWeight: '700' },
-  topDealDeal: { fontSize: 11, marginTop: 3, opacity: 0.85 },
-  topDealTime: { fontSize: 11, marginTop: 2, opacity: 0.7 },
+  textArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 10, justifyContent: 'flex-end' },
+  topDealName: { color: '#E1B12C', fontSize: 13, fontWeight: '700' },
+  topDealDeal: { color: '#FFFFFF', fontSize: 11, marginTop: 3, opacity: 0.85 },
+  topDealTime: { color: '#E1B12C', fontSize: 11, marginTop: 2 },
 });

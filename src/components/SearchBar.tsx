@@ -59,7 +59,7 @@ export function SearchBar({ searchText, onChangeText, filteredBars, onSelectBar 
 }
 
 const styles = StyleSheet.create({
-  searchWrapper: { paddingHorizontal: 16, paddingTop: 16, zIndex: 10, backgroundColor: '#fff' },
+  searchWrapper: { paddingHorizontal: 16, paddingTop: 16, zIndex: 10, backgroundColor: '#141417' },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',

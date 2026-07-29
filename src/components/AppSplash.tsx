@@ -4,17 +4,17 @@ import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 export function AppSplash() {
   return (
     <View style={styles.container}>
-      {/* Spinner in upper third */}
-      <View style={styles.spinnerArea}>
-        <ActivityIndicator size="large" color="#E1B12C" />
-      </View>
-
       {/* Logo centred */}
       <Image
         source={require('@/assets/images/spinner-logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
+
+      {/* Spinner in front of logo */}
+      <View style={styles.spinnerArea}>
+        <ActivityIndicator size="large" color="#E1B12C" />
+      </View>
     </View>
   );
 }
@@ -22,7 +22,7 @@ export function AppSplash() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#181818',
+    backgroundColor: '#141417',
     alignItems: 'center',
     justifyContent: 'center',
   },

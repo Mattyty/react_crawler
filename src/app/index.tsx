@@ -285,7 +285,7 @@ export default function HomeScreen() {
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
-            <Text style={styles.sectionTitle}>Top Deals...</Text>
+            <Text style={styles.sectionTitle}>Today's Top Deals...</Text>
             <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} />
 
             {/* Filter Pills */}
@@ -316,9 +316,9 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-  tabs: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 12, gap: 8, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#141417' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#141417' },
+  tabs: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 12, gap: 8, backgroundColor: '#141417' },
   tab: {
     flex: 1,
     alignItems: 'center',
@@ -326,11 +326,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  tabActive: { borderBottomColor: '#6F61EF' },
+  tabActive: { borderBottomColor: '#E1B12C' },
   tabContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  tabText: { fontSize: 14, fontWeight: '500', color: '#15161E' },
+  tabText: { fontSize: 14, fontWeight: '500', color: '#E1B12C' },
   scrollWrapper: { flex: 1, position: 'relative' as any },
-  scrollContent: { flex: 1, backgroundColor: '#fff' },
+  scrollContent: { flex: 1, backgroundColor: '#141417' },
   filteringOverlay: {
     position: 'absolute',
     top: 0,
@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(18, 18, 18, 0.4)',
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10 },
-  divider: { height: 2, backgroundColor: '#E5E7EB', marginVertical: 12, marginHorizontal: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 10, color: '#E1B12C' },
+  divider: { height: 2, backgroundColor: '#333333', marginTop: 20, marginBottom: 12, marginHorizontal: 16 },
 });

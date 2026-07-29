@@ -75,3 +75,8 @@ export function IconStation({ size = 20, color = '#000' }: IconProps) {
 export function IconTime({ size = 20, color = '#000' }: IconProps) {
   return <Ionicons name="time" size={size} color={color} />;
 }
+
+// Tag/sale icon (top deal)
+export function IconTag({ size = 20, color = '#000' }: IconProps) {
+  return <MaterialCommunityIcons name="tag" size={size} color={color} />;
+}

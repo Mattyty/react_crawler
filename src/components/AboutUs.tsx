@@ -13,11 +13,11 @@ export function AboutUs({ visible, onClose }: Props) {
         <View style={styles.sheet}>
           <Text style={styles.title}>Hi There!</Text>
           <Text style={styles.body}>
-            {'\n'}Crawler was built with one simple mission: to give you the ultimate, FREE
+            {'\n'}The City Uncovered was built with one simple mission: to give you the ultimate, FREE
             happy hour finder right in your pocket.{'\n\n'}We cut through the noise to bring you
             real-time, verified drink offers exactly when and where you need them, so you never miss
             a bargain when you're out in the city.{'\n\n'}If you would like your bar featured, or
-            would like to get in touch, please contact us at:{'\n'}city-crawler@outlook.com
+            would like to get in touch, please contact us at:{'\n'}thecityuncovered@outlook.com
           </Text>
         </View>
       </Pressable>

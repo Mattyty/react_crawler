@@ -40,12 +40,6 @@ export function FilterPills({ options, activeFilters, onToggle, onClearAll }: Pr
             );
           })}
         </ScrollView>
-        {/* Fade hint on right edge */}
-        <View style={styles.fadeHint} pointerEvents="none">
-          <View style={styles.fadeStep1} />
-          <View style={styles.fadeStep2} />
-          <View style={styles.fadeStep3} />
-        </View>
       </View>
     </View>
   );
@@ -60,7 +54,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6B7280',
+    color: '#9CA3AF',
     letterSpacing: 0.8,
     textTransform: 'uppercase' as any,
     paddingHorizontal: 24,
@@ -84,15 +78,15 @@ const styles = StyleSheet.create({
   },
   fadeStep1: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(18,18,18,0.3)',
   },
   fadeStep2: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: 'rgba(18,18,18,0.6)',
   },
   fadeStep3: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(18,18,18,0.9)',
   },
   pill: {
     paddingHorizontal: 14,

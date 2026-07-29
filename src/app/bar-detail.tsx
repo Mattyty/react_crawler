@@ -127,17 +127,6 @@ export default function BarDetailScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* Live Status */}
-          <View style={styles.statusRow}>
-            <Text style={[styles.statusBadge, { color: isLiveNow ? '#22C55E' : '#E1B12C' }]}>
-              {isLiveNow ? 'LIVE' : 'COMING UP...'}
-            </Text>
-            {isLiveNow
-              ? <IconStation size={14} color="#22C55E" />
-              : <IconTime size={14} color="#E1B12C" />
-            }
-          </View>
-
           {/* Bar Name - linked if url available */}
           {bar.url ? (
             <Pressable onPress={() => Linking.openURL(bar.url!.startsWith('http') ? bar.url! : `https://${bar.url}`)}>
@@ -164,6 +153,17 @@ export default function BarDetailScreen() {
 
           <View style={styles.divider} />
 
+          {/* Live Status */}
+          <View style={styles.statusRow}>
+            <Text style={[styles.statusBadge, { color: isLiveNow ? '#22C55E' : '#E1B12C' }]}>
+              {isLiveNow ? 'LIVE' : 'COMING UP SOON...'}
+            </Text>
+            {isLiveNow
+              ? <IconStation size={14} color="#22C55E" />
+              : <IconTime size={14} color="#E1B12C" />
+            }
+          </View>
+
           {/* Happy Hour Deal */}
           {offer && (
             <>
@@ -173,6 +173,8 @@ export default function BarDetailScreen() {
               )}
             </>
           )}
+
+          <View style={styles.divider} />
 
           {/* Bar Vibe */}
           <Text style={styles.sectionTitle}>Bar Vibe</Text>
@@ -191,22 +193,22 @@ export default function BarDetailScreen() {
           {/* Address */}
           <Text style={styles.address}><Text style={styles.addressLabel}>Address: </Text>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
 
-          {/* Take Me There */}
-          <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleTakeMeThere}>
-            {({ pressed }) => (
-              <>
-                <Text style={[styles.buttonIcon, pressed && styles.buttonTextPressed]}>🧭</Text>
-                <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Take Me There</Text>
-              </>
-            )}
-          </Pressable>
+          {/* Static map - tap to open directions */}
+          {bar.lat && bar.long && (
+            <Pressable onPress={handleTakeMeThere}>
+              <Image
+                source={{ uri: `https://maps.googleapis.com/maps/api/staticmap?center=${bar.lat},${bar.long}&zoom=16&size=400x150&markers=color:0xE1B12C%7C${bar.lat},${bar.long}&key=AIzaSyDo9TG7H0t2ACrWHBg6BLhR_oS9DPyKTo8` }}
+                style={styles.staticMap}
+              />
+            </Pressable>
+          )}
 
           {/* Book A Table - only show if table_reservation URL available */}
           {bar.table_reservation && (
             <Pressable style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]} onPress={handleBookTable}>
               {({ pressed }) => (
                 <>
-                  <Text style={[styles.buttonIcon, { color: '#E1B12C' }, pressed && styles.buttonTextPressed]}>✓</Text>
+                  <Text style={[styles.buttonIcon, pressed && styles.buttonTextPressed]}>✓</Text>
                   <Text style={[styles.buttonText, pressed && styles.buttonTextPressed]}>Book A Table</Text>
                 </>
               )}
@@ -216,7 +218,7 @@ export default function BarDetailScreen() {
           {/* Deal Verification */}
           <Text style={styles.verifyTitle}>Is this deal still live?</Text>
           {reported ? (
-            <Text style={styles.thanksText}>Thanks for keeping Crawler updated 👍</Text>
+            <Text style={styles.thanksText}>Thanks for keeping The City Uncovered updated 👍</Text>
           ) : (
             <View style={styles.verifyRow}>
               <Pressable style={({ pressed }) => [styles.noButton, pressed && styles.buttonPressed]} onPress={() => handleReport(false)}>
@@ -245,7 +247,10 @@ function Header({ onBack }: { onBack: () => void }) {
       <Pressable onPress={onBack} hitSlop={8}>
         <IconBack size={26} color="#E1B12C" />
       </Pressable>
-      <Text style={styles.logo}>CRAWLER</Text>
+      <View style={styles.logoTextWrap}>
+        <Text style={styles.logoLine1}>THE CITY</Text>
+        <Text style={styles.logoLine2}>UNCOVERED</Text>
+      </View>
       <View style={styles.spacer} />
       <Image
         source={require('@/assets/images/crawler-logo.png')}
@@ -257,10 +262,10 @@ function Header({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#141417' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#141417' },
   header: {
-    backgroundColor: '#121212',
+    backgroundColor: '#141417',
     height: 60,
     flexDirection: 'row',
     alignItems: 'center',
@@ -268,15 +273,17 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   backIcon: { color: '#E1B12C', fontSize: 26 },
-  logo: { color: '#E1B12C', fontSize: 22, fontWeight: '700' },
+  logoTextWrap: { justifyContent: 'center', marginLeft: 12 },
+  logoLine1: { color: '#FFFFFF', fontSize: 20, fontWeight: '300', letterSpacing: 1.5 },
+  logoLine2: { color: '#E1B12C', fontSize: 20, fontWeight: '300', letterSpacing: 1.5 },
   spacer: { flex: 1 },
   logoImage: { width: 40, height: 40 },
-  scroll: { flex: 1, backgroundColor: '#fff' },
+  scroll: { flex: 1, backgroundColor: '#141417' },
   imageWrapper: { padding: 16 },
-  barImage: { width: '100%', height: 230, borderRadius: 12 },
+  barImage: { width: '100%', height: 230, borderRadius: 12, borderWidth: 1, borderColor: '#E1B12C' },
   content: { paddingHorizontal: 16 },
-  barName: { fontSize: 24, fontWeight: '500', color: '#0F1113' },
-  barNameLink: { textDecorationLine: 'underline', color: '#121212' },
+  barName: { fontSize: 24, fontWeight: '500', color: '#E1B12C', textAlign: 'center' },
+  barNameLink: { textDecorationLine: 'underline', color: '#E1B12C' },
   statusBadge: { fontSize: 13, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 4 },
   scheduleCard: {
@@ -290,39 +297,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    shadowColor: '#E1B12C',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
   },
   scheduleTitle: { fontSize: 16, fontWeight: '700', color: '#121212', marginBottom: 6 },
   scheduleTime: { fontSize: 16, fontWeight: '600', color: '#121212', marginBottom: 4 },
   scheduleDays: { fontSize: 13, color: '#121212', textAlign: 'center' },
-  dealSummary: { fontSize: 24, fontWeight: '600', color: '#0F1113', marginTop: 8 },
-  dealDescription: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 12, lineHeight: 20 },
-  sectionTitle: { fontSize: 24, fontWeight: '600', marginTop: 24 },
-  description: { fontSize: 14, fontWeight: '400', color: '#57636C', marginTop: 12, lineHeight: 20 },
-  verified: { fontSize: 14, marginTop: 12, color: '#333' },
-  divider: { height: 1, backgroundColor: '#DBE2E7', marginVertical: 16 },
-  address: { fontSize: 14, fontWeight: '500', color: '#57636C' },
-  addressLabel: { fontWeight: '700', color: '#0F1113' },
-  directions: { fontSize: 14, fontWeight: '500', color: '#57636C', marginTop: 8 },
+  dealSummary: { fontSize: 24, fontWeight: '600', color: '#E1B12C', marginTop: 8 },
+  dealDescription: { fontSize: 14, fontWeight: '400', color: '#D1D5DB', marginTop: 12, lineHeight: 20 },
+  sectionTitle: { fontSize: 24, fontWeight: '600', color: '#E1B12C', marginTop: 8 },
+  description: { fontSize: 14, fontWeight: '400', color: '#D1D5DB', marginTop: 12, lineHeight: 20 },
+  verified: { fontSize: 14, marginTop: 12, color: '#9CA3AF' },
+  divider: { height: 1, backgroundColor: '#333333', marginVertical: 16 },
+  address: { fontSize: 14, fontWeight: '500', color: '#D1D5DB' },
+  addressLabel: { fontWeight: '700', color: '#E1B12C' },
+  staticMap: {
+    width: '100%',
+    height: 92,
+    borderRadius: 10,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#E1B12C',
+  },
+  directions: { fontSize: 14, fontWeight: '500', color: '#9CA3AF', marginTop: 8 },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#121212',
+    backgroundColor: '#E1B12C',
     borderRadius: 8,
     height: 40,
     marginTop: 24,
     gap: 8,
   },
-  buttonIcon: { fontSize: 15 },
-  buttonText: { color: '#E1B12C', fontSize: 16, fontWeight: '600' },
-  buttonPressed: { backgroundColor: '#E1B12C' },
-  buttonTextPressed: { color: '#121212' },
-  verifyTitle: { fontSize: 18, fontWeight: '500', textAlign: 'center', marginTop: 24 },
+  buttonIcon: { fontSize: 15, color: '#121212' },
+  buttonText: { color: '#121212', fontSize: 16, fontWeight: '600' },
+  buttonPressed: { backgroundColor: '#121212' },
+  buttonTextPressed: { color: '#E1B12C' },
+  verifyTitle: { fontSize: 18, fontWeight: '500', textAlign: 'center', marginTop: 24, color: '#FFFFFF' },
   verifyRow: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginTop: 12 },
   noButton: {
     backgroundColor: '#FF3D3D',
@@ -337,5 +352,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   voteText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  thanksText: { textAlign: 'center', marginTop: 12, fontSize: 14, color: '#333' },
+  thanksText: { textAlign: 'center', marginTop: 12, fontSize: 14, color: '#D1D5DB' },
 });

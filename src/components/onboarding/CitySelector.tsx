@@ -1,12 +1,11 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { IconCity, IconShip } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
 
 const CITIES = [
-  { name: 'Manchester', icon: <IconCity size={22} color="#121212" /> },
-  { name: 'Liverpool', icon: <IconShip size={22} color="#121212" /> },
+  { name: 'Manchester', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/mcr.png' },
+  { name: 'Liverpool', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/liverpool.png' },
 ];
 
 interface Props {
@@ -30,7 +29,8 @@ export function CitySelector({ visible, onDone, dismissable }: Props) {
           <Text style={styles.title}>Select Your City:</Text>
           {CITIES.map((city) => (
             <Pressable key={city.name} style={styles.option} onPress={() => selectCity(city.name)}>
-              <View style={styles.iconWrap}>{city.icon}</View>
+              <Image source={{ uri: city.image }} style={styles.optionImage} />
+              <View style={styles.optionOverlay} />
               <Text style={styles.optionText}>{city.name}</Text>
             </Pressable>
           ))}
@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: '#121212',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 12,
+    padding: 16,
     paddingBottom: 40,
     minHeight: '50%',
     justifyContent: 'center',
@@ -60,23 +60,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginVertical: 24,
+    color: '#E1B12C',
   },
   option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E2E2',
-    height: 55,
+    height: 80,
     marginBottom: 12,
-    paddingHorizontal: 16,
-    borderRadius: 4,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative' as any,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 20,
+    borderWidth: 1,
+    borderColor: '#E1B12C',
   },
-  iconWrap: {
-    width: 28,
-    marginRight: 12,
-    alignItems: 'center',
+  optionImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  optionOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
   optionText: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#E1B12C',
+    letterSpacing: 1.5,
   },
 });
