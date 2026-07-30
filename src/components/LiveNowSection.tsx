@@ -59,13 +59,6 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
               <>
                 <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.cardImage} />
                 <View style={styles.cardOverlay} />
-                {endsSoon && (
-                  <View style={styles.sashContainer}>
-                    <View style={styles.sash}>
-                      <Text style={styles.sashText}>ENDS SOON!</Text>
-                    </View>
-                  </View>
-                )}
                 {isTopDeal && (
                   <View style={styles.topDealBadge}>
                     <Text style={styles.topDealStar}>★</Text>
@@ -83,9 +76,14 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
                     <Text style={styles.cardTime}>
                       {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
                     </Text>
-                    {distance && (
+                    {distance && !endsSoon && (
                       <View style={styles.distancePill}>
                         <Text style={styles.cardDistance}>{distance}</Text>
+                      </View>
+                    )}
+                    {endsSoon && (
+                      <View style={styles.endsSoonPill}>
+                        <Text style={styles.endsSoonText}>ENDS SOON!</Text>
                       </View>
                     )}
                   </View>
@@ -124,32 +122,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },
-  sashContainer: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 100,
-    height: 100,
-    overflow: 'hidden',
-    zIndex: 2,
-    borderBottomRightRadius: 10,
-  },
-  sash: {
-    position: 'absolute',
-    bottom: 16,
-    right: -26,
+  endsSoonPill: {
     backgroundColor: '#E1B12C',
-    paddingVertical: 3,
-    paddingHorizontal: 30,
-    transform: [{ rotate: '-45deg' }],
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  sashText: {
-    fontSize: 7,
+  endsSoonText: {
+    fontSize: 9,
     fontWeight: '800',
     color: '#121212',
-    textAlign: 'center',
     letterSpacing: 0.5,
-    paddingLeft: 4,
   },
   cardImage: {
     ...StyleSheet.absoluteFillObject,
@@ -204,8 +187,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   emptyCard: {
-    alignSelf: 'center',
-    width: '60%',
+    alignSelf: 'stretch',
+    marginHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E1B12C',

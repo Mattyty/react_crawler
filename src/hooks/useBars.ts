@@ -79,7 +79,12 @@ export function useBars(city: string, userPersona?: string | null) {
         return liveBarIds.has(b.id) || upcomingBarIds.has(b.id) ||
           todayOffers.some((o) => {
             const val = (o as any)?.is_top_deal ?? (o as any)?.top_deal;
-            return (val === true || val === 'true' || val === 'TRUE' || val === 1) && o.bar_id === b.id;
+            const isTopDeal = val === true || val === 'true' || val === 'TRUE' || val === 1;
+            if (!isTopDeal || o.bar_id !== b.id) return false;
+            // Only include if live or upcoming (not expired)
+            const isLive = o.start_time && o.end_time && o.start_time <= now && o.end_time >= now;
+            const isUpcoming = o.start_time && o.start_time > now;
+            return isLive || isUpcoming;
           }) || b.is_flash_active;
       })
       .map((b) => {

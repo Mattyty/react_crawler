@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   emptyCard: {
-    alignSelf: 'center',
-    width: '60%',
+    alignSelf: 'stretch',
+    marginHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E1B12C',

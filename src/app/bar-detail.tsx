@@ -89,7 +89,9 @@ export default function BarDetailScreen() {
     if (!isLive) {
       await supabase.from('deal_reports').insert({ bar_name: bar?.name });
     } else if (offer) {
-      await supabase.from('offers').update({ last_verified: new Date().toISOString() }).eq('id', offer.id);
+      const now = new Date().toISOString();
+      await supabase.from('offers').update({ last_verified: now }).eq('id', offer.id);
+      setOffer({ ...offer, last_verified: now });
     }
     setReported(true);
   };
