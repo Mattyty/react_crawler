@@ -40,6 +40,7 @@ export default function HomeScreen() {
   const [topDealBars, setTopDealBars] = useState<Bar[]>([]);
   const [topDealOffers, setTopDealOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'bars' | 'map'>('bars');
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
@@ -63,7 +64,8 @@ export default function HomeScreen() {
   const city = currentCity || 'Manchester';
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    if (!bars.length) setLoading(true);
+    else setRefreshing(true);
     const today = getDayOfWeek();
     const now = getCurrentTime();
 
@@ -119,6 +121,7 @@ export default function HomeScreen() {
     setTopDealBars(topDeals);
     setTopDealOffers(topOffers);
     setLoading(false);
+    setRefreshing(false);
   }, [city, userPersona]);
 
   useEffect(() => {
@@ -284,9 +287,9 @@ export default function HomeScreen() {
 
       {activeTab === 'bars' ? (
         <View style={styles.scrollWrapper}>
-          {(filtering || mapLoading) && (
+          {(filtering || mapLoading || refreshing) && (
             <View style={styles.filteringOverlay}>
-              <ActivityIndicator size={mapLoading ? 'large' : 'small'} color="#E1B12C" />
+              <ActivityIndicator size={(mapLoading || refreshing) ? 'large' : 'small'} color="#E1B12C" />
             </View>
           )}
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>

@@ -198,7 +198,7 @@ export default function BarDetailScreen() {
           <View style={styles.divider} />
 
           {/* Bar Vibe */}
-          <Text style={styles.sectionTitle}>Bar Vibe</Text>
+          <Text style={styles.sectionTitle}>The Vibe</Text>
           <Text style={styles.description}>
             {bar.bar_description ||
               'German Beer house with a roaring fire, live music, great food and alpine vibes'}
