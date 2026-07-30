@@ -295,7 +295,7 @@ export default function HomeScreen() {
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
-            <Text style={styles.sectionTitle}>Today's Top Deals...</Text>
+            <Text style={styles.sectionTitle}>Today's Top Picks...</Text>
             <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} />
 
             {/* Filter Pills */}

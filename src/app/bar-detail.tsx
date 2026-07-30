@@ -32,6 +32,7 @@ export default function BarDetailScreen() {
   const [offer, setOffer] = useState<Offer | null>(null);
   const [offerDays, setOfferDays] = useState<string[]>([]);
   const [isLiveNow, setIsLiveNow] = useState(false);
+  const [isUpcoming, setIsUpcoming] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reported, setReported] = useState(false);
 
@@ -62,9 +63,12 @@ export default function BarDetailScreen() {
       ) || allBarOffers[0] || null;
       if (todayOffer) {
         setOffer(todayOffer);
-        // Check if live now
+        // Check if live now or upcoming
         if (todayOffer.start_time && todayOffer.end_time) {
-          setIsLiveNow(todayOffer.start_time <= currentTime && todayOffer.end_time >= currentTime);
+          const live = todayOffer.start_time <= currentTime && todayOffer.end_time >= currentTime;
+          const upcoming = todayOffer.start_time > currentTime;
+          setIsLiveNow(live);
+          setIsUpcoming(upcoming);
         }
       }
       setLoading(false);
@@ -172,22 +176,22 @@ export default function BarDetailScreen() {
           <View style={styles.divider} />
 
           {/* Live Status */}
-          <View style={styles.statusRow}>
-            <Text style={[styles.statusBadge, { color: isLiveNow ? '#22C55E' : '#E1B12C' }]}>
-              {isLiveNow ? 'LIVE' : 'COMING UP SOON...'}
-            </Text>
-            {isLiveNow
-              ? <IconStation size={14} color="#22C55E" />
-              : <IconTime size={14} color="#E1B12C" />
-            }
-          </View>
+          {(isLiveNow || isUpcoming) && (
+            <View style={styles.statusRow}>
+              <Text style={[styles.statusBadge, { color: isLiveNow ? '#22C55E' : '#E1B12C' }]}>
+                {isLiveNow ? 'LIVE' : 'COMING UP SOON...'}
+              </Text>
+              {isLiveNow
+                ? <IconStation size={14} color="#22C55E" />
+                : <IconTime size={14} color="#E1B12C" />
+              }
+            </View>
+          )}
 
           {/* Happy Hour Deal */}
           {offer && (
             <>
-              <Text style={styles.dealSummary}>
-                {(offer as any).persona?.toLowerCase() === 'student' ? 'Student Happy Hour Deal:' : 'Happy Hour Deal:'}
-              </Text>
+              <Text style={styles.dealSummary}>The Deal:</Text>
               {offer.deal_description && (
                 <Text style={styles.dealDescription}>{offer.deal_description}</Text>
               )}
@@ -209,7 +213,7 @@ export default function BarDetailScreen() {
           <View style={styles.divider} />
 
           {/* Address */}
-          <Text style={styles.address}><Text style={styles.addressLabel}>Address: </Text>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
+          <Text style={styles.address}><Text style={styles.addressLabel}>The Address: </Text>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
 
           {/* Static map - tap to open directions */}
           {bar.lat && bar.long && (
@@ -236,7 +240,7 @@ export default function BarDetailScreen() {
           {/* Deal Verification */}
           <Text style={styles.verifyTitle}>Is this deal still live?</Text>
           {reported ? (
-            <Text style={styles.thanksText}>Thanks for keeping The City Uncovered updated 👍</Text>
+            <Text style={styles.thanksText}>Thanks for keeping The City Uncovered updated ❤️</Text>
           ) : (
             <View style={styles.verifyRow}>
               <Pressable style={({ pressed }) => [styles.noButton, pressed && styles.buttonPressed]} onPress={() => handleReport(false)}>
@@ -335,7 +339,7 @@ const styles = StyleSheet.create({
   addressLabel: { fontWeight: '700', color: '#E1B12C' },
   staticMap: {
     width: '100%',
-    height: 92,
+    height: 101,
     borderRadius: 10,
     marginTop: 12,
     borderWidth: 1,

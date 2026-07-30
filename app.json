@@ -2,7 +2,7 @@
   "expo": {
     "name": "TCU",
     "slug": "react-crawler",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "extra": {
       "eas": {
         "projectId": "434dc5aa-31a2-4120-a9e5-90dbd192f5cc"
@@ -17,7 +17,7 @@
       "icon": "./assets/images/appIcon.png"
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#121212",
         "foregroundImage": "./assets/images/appIcon.png"
