@@ -36,7 +36,7 @@ function getCurrentTime(): string {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:00`;
 }
 
-export function useBars(city: string) {
+export function useBars(city: string, userPersona?: string | null) {
   const [mapBars, setMapBars] = useState<MapBar[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +52,14 @@ export function useBars(city: string) {
     const offersRes = await supabase.from('offers').select('*');
     const allOffers: Offer[] = offersRes.data || [];
 
-    const todayOffers = allOffers.filter(
+    // Filter out persona-specific offers that don't match the user's persona
+    const visibleOffers = allOffers.filter((o) => {
+      const offerPersona = (o as any).persona;
+      if (!offerPersona) return true;
+      return offerPersona.toLowerCase() === (userPersona || '').toLowerCase();
+    });
+
+    const todayOffers = visibleOffers.filter(
       (o) => barIds.includes(o.bar_id) && o.day_of_week?.toLowerCase().includes(today.toLowerCase())
     );
 
@@ -90,7 +97,7 @@ export function useBars(city: string) {
 
     setMapBars(results);
     setLoading(false);
-  }, [city]);
+  }, [city, userPersona]);
 
   useEffect(() => {
     fetch();

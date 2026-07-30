@@ -30,7 +30,7 @@ function getCurrentTime(): string {
 }
 
 export default function HomeScreen() {
-  const { currentCity } = useAppState();
+  const { currentCity, userPersona } = useAppState();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bars, setBars] = useState<Bar[]>([]);
@@ -75,7 +75,14 @@ export default function HomeScreen() {
     const fetchedOffers: Offer[] = offersRes.data || [];
     const cityOffers = fetchedOffers.filter((o) => barIds.includes(o.bar_id));
 
-    const todayOffers = cityOffers.filter(
+    // Filter out persona-specific offers that don't match the user's persona
+    const visibleOffers = cityOffers.filter((o) => {
+      const offerPersona = (o as any).persona;
+      if (!offerPersona) return true; // no persona = show to everyone
+      return offerPersona.toLowerCase() === (userPersona || '').toLowerCase();
+    });
+
+    const todayOffers = visibleOffers.filter(
       (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
     );
 
@@ -112,7 +119,7 @@ export default function HomeScreen() {
     setTopDealBars(topDeals);
     setTopDealOffers(topOffers);
     setLoading(false);
-  }, [city]);
+  }, [city, userPersona]);
 
   useEffect(() => {
     fetchData();

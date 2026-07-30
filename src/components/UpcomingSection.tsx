@@ -73,7 +73,9 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
                       {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
                     </Text>
                     {distance && (
-                      <Text style={styles.cardDistance}>{distance}</Text>
+                      <View style={styles.distancePill}>
+                        <Text style={styles.cardDistance}>{distance}</Text>
+                      </View>
                     )}
                   </View>
                 </View>
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    height: 132,
+    height: 145,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -152,10 +154,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   cardName: { color: '#E1B12C', fontSize: 16, fontWeight: '700' },
-  cardDeal: { color: '#FFFFFF', fontSize: 13, marginTop: 4 },
+  cardDeal: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginTop: 4 },
   bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   cardTime: { color: '#E1B12C', fontSize: 12 },
   cardDistance: { color: '#FFFFFF', fontSize: 11 },
+  distancePill: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
   emptyCard: {
     alignSelf: 'center',
     width: '60%',

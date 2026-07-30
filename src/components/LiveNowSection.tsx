@@ -34,6 +34,17 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
         const isTopDeal = topDealBarIds?.has(bar.id) ?? false;
         const distance = distanceMap?.get(bar.id);
 
+        // Check if ending within 60 minutes
+        let endsSoon = false;
+        if (offer.end_time) {
+          const now = new Date();
+          const [eh, em] = offer.end_time.split(':').map(Number);
+          const endDate = new Date();
+          endDate.setHours(eh, em, 0, 0);
+          const minsLeft = (endDate.getTime() - now.getTime()) / 60000;
+          endsSoon = minsLeft > 0 && minsLeft <= 60;
+        }
+
         return (
           <Pressable
             key={offer.id}
@@ -48,6 +59,13 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
               <>
                 <Image source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }} style={styles.cardImage} />
                 <View style={styles.cardOverlay} />
+                {endsSoon && (
+                  <View style={styles.sashContainer}>
+                    <View style={styles.sash}>
+                      <Text style={styles.sashText}>ENDS SOON!</Text>
+                    </View>
+                  </View>
+                )}
                 {isTopDeal && (
                   <View style={styles.topDealBadge}>
                     <Text style={styles.topDealStar}>★</Text>
@@ -66,7 +84,9 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
                       {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
                     </Text>
                     {distance && (
-                      <Text style={styles.cardDistance}>{distance}</Text>
+                      <View style={styles.distancePill}>
+                        <Text style={styles.cardDistance}>{distance}</Text>
+                      </View>
                     )}
                   </View>
                 </View>
@@ -85,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    height: 132,
+    height: 145,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -103,6 +123,32 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
+  },
+  sashContainer: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 100,
+    height: 100,
+    overflow: 'hidden',
+    zIndex: 2,
+  },
+  sash: {
+    position: 'absolute',
+    bottom: 18,
+    right: -24,
+    backgroundColor: '#E1B12C',
+    paddingVertical: 3,
+    paddingHorizontal: 30,
+    transform: [{ rotate: '-45deg' }],
+  },
+  sashText: {
+    fontSize: 7,
+    fontWeight: '800',
+    color: '#121212',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    paddingLeft: 4,
   },
   cardImage: {
     ...StyleSheet.absoluteFillObject,
@@ -146,10 +192,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   cardName: { color: '#E1B12C', fontSize: 16, fontWeight: '700' },
-  cardDeal: { color: '#FFFFFF', fontSize: 13, marginTop: 4 },
+  cardDeal: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginTop: 4 },
   bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   cardTime: { color: '#E1B12C', fontSize: 12 },
   cardDistance: { color: '#FFFFFF', fontSize: 11 },
+  distancePill: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
   emptyCard: {
     alignSelf: 'center',
     width: '60%',

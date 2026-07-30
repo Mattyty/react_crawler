@@ -65,9 +65,9 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   onClearFilters?: () => void;
   filterOptions?: string[];
 }) {
-  const { currentCity } = useAppState();
+  const { currentCity, userPersona } = useAppState();
   const city = currentCity || 'Manchester';
-  const { mapBars, loading } = useBars(city);
+  const { mapBars, loading } = useBars(city, userPersona);
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);

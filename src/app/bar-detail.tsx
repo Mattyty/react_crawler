@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconBack, IconStation, IconTime } from '@/components/Icons';
+import { useAppState } from '@/context/AppStateContext';
 import { getBarImage } from '@/lib/fallbackImages';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
@@ -26,6 +27,7 @@ function getDayOfWeek(): string {
 export default function BarDetailScreen() {
   const { barId } = useLocalSearchParams<{ barId: string }>();
   const router = useRouter();
+  const { userPersona } = useAppState();
   const [bar, setBar] = useState<Bar | null>(null);
   const [offer, setOffer] = useState<Offer | null>(null);
   const [offerDays, setOfferDays] = useState<string[]>([]);
@@ -151,6 +153,20 @@ export default function BarDetailScreen() {
             </View>
           )}
 
+          {/* Last Verified */}
+          {offer?.last_verified && (
+            <Text style={styles.verified}>Last verified: {(() => {
+              const d = new Date(offer.last_verified);
+              if (isNaN(d.getTime())) return offer.last_verified;
+              const hh = String(d.getHours()).padStart(2, '0');
+              const mm = String(d.getMinutes()).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              const mo = String(d.getMonth() + 1).padStart(2, '0');
+              const yyyy = d.getFullYear();
+              return `${dd}/${mo}/${yyyy} @ ${hh}:${mm}`;
+            })()}</Text>
+          )}
+
           <View style={styles.divider} />
 
           {/* Live Status */}
@@ -167,9 +183,14 @@ export default function BarDetailScreen() {
           {/* Happy Hour Deal */}
           {offer && (
             <>
-              <Text style={styles.dealSummary}>Happy Hour Deal:</Text>
+              <Text style={styles.dealSummary}>
+                {(offer as any).persona?.toLowerCase() === 'student' ? 'Student Happy Hour Deal:' : 'Happy Hour Deal:'}
+              </Text>
               {offer.deal_description && (
                 <Text style={styles.dealDescription}>{offer.deal_description}</Text>
+              )}
+              {(offer as any).persona?.toLowerCase() === 'student' && (
+                <Text style={styles.studentNote}>*Offer available to students only. ID may be required.</Text>
               )}
             </>
           )}
@@ -182,11 +203,6 @@ export default function BarDetailScreen() {
             {bar.bar_description ||
               'German Beer house with a roaring fire, live music, great food and alpine vibes'}
           </Text>
-
-          {/* Last Verified */}
-          {offer?.last_verified && (
-            <Text style={styles.verified}>Last verified: {offer.last_verified}</Text>
-          )}
 
           <View style={styles.divider} />
 
@@ -308,9 +324,10 @@ const styles = StyleSheet.create({
   scheduleDays: { fontSize: 13, color: '#121212', textAlign: 'center' },
   dealSummary: { fontSize: 24, fontWeight: '600', color: '#E1B12C', marginTop: 8 },
   dealDescription: { fontSize: 14, fontWeight: '400', color: '#D1D5DB', marginTop: 12, lineHeight: 20 },
+  studentNote: { fontSize: 12, fontWeight: '400', color: '#9CA3AF', marginTop: 8, fontStyle: 'italic' },
   sectionTitle: { fontSize: 24, fontWeight: '600', color: '#E1B12C', marginTop: 8 },
   description: { fontSize: 14, fontWeight: '400', color: '#D1D5DB', marginTop: 12, lineHeight: 20 },
-  verified: { fontSize: 14, marginTop: 12, color: '#9CA3AF' },
+  verified: { fontSize: 12, marginTop: 10, color: '#9CA3AF', textAlign: 'center' },
   divider: { height: 1, backgroundColor: '#333333', marginVertical: 16 },
   address: { fontSize: 14, fontWeight: '500', color: '#D1D5DB' },
   addressLabel: { fontWeight: '700', color: '#E1B12C' },

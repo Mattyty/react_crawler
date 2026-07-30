@@ -41,9 +41,9 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   onClearFilters?: () => void;
   filterOptions?: string[];
 }) {
-  const { currentCity } = useAppState();
+  const { currentCity, userPersona } = useAppState();
   const city = currentCity || 'Manchester';
-  const { mapBars, loading } = useBars(city);
+  const { mapBars, loading } = useBars(city, userPersona);
   const router = useRouter();
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);

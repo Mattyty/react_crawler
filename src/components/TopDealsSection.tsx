@@ -148,6 +148,6 @@ const styles = StyleSheet.create({
   },
   textArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 10, justifyContent: 'flex-end' },
   topDealName: { color: '#E1B12C', fontSize: 13, fontWeight: '700' },
-  topDealDeal: { color: '#FFFFFF', fontSize: 11, marginTop: 3, opacity: 0.85 },
+  topDealDeal: { color: '#FFFFFF', fontSize: 11, fontWeight: '700', marginTop: 3 },
   topDealTime: { color: '#E1B12C', fontSize: 11, marginTop: 2 },
 });
