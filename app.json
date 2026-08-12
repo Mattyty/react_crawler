@@ -14,7 +14,9 @@
     "scheme": "reactcrawler",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/appIcon.png"
+      "icon": "./assets/images/appIcon.png",
+      "bundleIdentifier": "com.thecityuncovered.app",
+      "buildNumber": "1"
     },
     "android": {
       "versionCode": 3,

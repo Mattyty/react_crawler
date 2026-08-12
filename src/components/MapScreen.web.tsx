@@ -58,16 +58,15 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const filteredMapBars = useMemo(() => {
     if (filters.size === 0) return mapBars;
     return mapBars.filter((bar) => {
-      const neighbourhoodMatch = bar.neighborhood && filters.has(bar.neighborhood.trim());
-      const drinkMatch = bar.drinks && bar.drinks.some((d) => filters.has(d));
-
-      // Determine which filter types are active
       const allNeighbourhoods = new Set(mapBars.map((b) => b.neighborhood?.trim()).filter(Boolean));
       const activeNeighbourhoods = Array.from(filters).filter((f) => allNeighbourhoods.has(f));
       const activeDrinks = Array.from(filters).filter((f) => !allNeighbourhoods.has(f));
 
-      const nMatch = activeNeighbourhoods.length === 0 || neighbourhoodMatch;
-      const dMatch = activeDrinks.length === 0 || drinkMatch;
+      const nMatch = activeNeighbourhoods.length === 0 ||
+        (bar.neighborhood && activeNeighbourhoods.includes(bar.neighborhood.trim()));
+
+      const dMatch = activeDrinks.length === 0 ||
+        (bar.drinks && activeDrinks.every((d) => bar.drinks!.map(x => x.toLowerCase()).includes(d.toLowerCase())));
 
       return nMatch && dMatch;
     });

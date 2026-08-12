@@ -28,8 +28,10 @@ export function SearchBar({ searchText, onChangeText, filteredBars, onSelectBar 
         )}
       </View>
       {searchText.length > 0 && (
-        <View style={styles.searchDropdown}>
-          <ScrollView keyboardShouldPersistTaps="handled" style={styles.dropdownScroll}>
+        <>
+          <Pressable style={styles.searchBackdrop} onPress={() => onChangeText('')} />
+          <View style={styles.searchDropdown}>
+          <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={styles.dropdownScroll}>
             {filteredBars.length === 0 ? (
               <View style={styles.noResultsRow}>
                 <Text style={styles.noResults}>No matches</Text>
@@ -53,6 +55,7 @@ export function SearchBar({ searchText, onChangeText, filteredBars, onSelectBar 
             )}
           </ScrollView>
         </View>
+        </>
       )}
     </View>
   );
@@ -60,6 +63,14 @@ export function SearchBar({ searchText, onChangeText, filteredBars, onSelectBar 
 
 const styles = StyleSheet.create({
   searchWrapper: { paddingHorizontal: 16, paddingTop: 16, zIndex: 10, backgroundColor: '#141417' },
+  searchBackdrop: {
+    position: 'absolute',
+    top: 72,
+    left: 0,
+    right: 0,
+    bottom: -1000,
+    zIndex: 15,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',

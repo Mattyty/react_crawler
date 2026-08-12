@@ -79,15 +79,15 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const filteredBars = React.useMemo(() => {
     if (!activeFilters || activeFilters.size === 0) return mapBars;
     return mapBars.filter((bar) => {
-      const neighbourhoodMatch = bar.neighborhood && activeFilters.has(bar.neighborhood.trim());
-      const drinkMatch = bar.drinks && bar.drinks.some((d) => activeFilters.has(d));
-
       const allNeighbourhoods = new Set(mapBars.map((b) => b.neighborhood?.trim()).filter(Boolean));
       const activeNeighbourhoods = Array.from(activeFilters).filter((f) => allNeighbourhoods.has(f));
       const activeDrinks = Array.from(activeFilters).filter((f) => !allNeighbourhoods.has(f));
 
-      const nMatch = activeNeighbourhoods.length === 0 || neighbourhoodMatch;
-      const dMatch = activeDrinks.length === 0 || drinkMatch;
+      const nMatch = activeNeighbourhoods.length === 0 ||
+        (bar.neighborhood && activeNeighbourhoods.includes(bar.neighborhood.trim()));
+
+      const dMatch = activeDrinks.length === 0 ||
+        (bar.drinks && activeDrinks.every((d) => bar.drinks!.includes(d)));
 
       return nMatch && dMatch;
     });
@@ -184,6 +184,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           style={styles.map}
           initialRegion={{ ...centre, latitudeDelta: 0.05, longitudeDelta: 0.05 }}
           onPress={() => setSelectedBar(null)}
+          mapType={Platform.OS === 'android' ? 'none' : 'standard'}
         >
           {Platform.OS === 'android' && (
             <UrlTile

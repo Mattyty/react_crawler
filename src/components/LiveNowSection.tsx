@@ -19,7 +19,7 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
       <View style={styles.emptyCard}>
         <Text style={styles.emptyIcon}>🕐</Text>
         <Text style={styles.emptyText}>
-          There are no Happy Hours running right now. Check below, or use the search bar to find out when your favourite bar runs their Happy Hour!!
+          There are no Happy Hours running right now. Check below, or use the search bar to find details on your favourite place.
         </Text>
       </View>
     );

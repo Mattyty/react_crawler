@@ -94,14 +94,14 @@ export function filterBars(
 
   const { neighbourhoodFilters, drinkFilters } = splitFilters(activeFilters, bars, offers);
 
-  // Build drink lookup: bar_id -> set of drinks
-  const barDrinks = new Map<number, Set<string>>();
+  // Build drink lookup: bar_id -> array of drink sets (one per offer)
+  const barOfferDrinks = new Map<number, Set<string>[]>();
   offers.forEach((offer) => {
     const parsed = parseDrinksArray((offer as any).drinks);
     if (parsed.length > 0) {
-      const existing = barDrinks.get(offer.bar_id) || new Set();
-      parsed.forEach((d) => existing.add(d));
-      barDrinks.set(offer.bar_id, existing);
+      const existing = barOfferDrinks.get(offer.bar_id) || [];
+      existing.push(new Set(parsed));
+      barOfferDrinks.set(offer.bar_id, existing);
     }
   });
 
@@ -112,7 +112,10 @@ export function filterBars(
 
     const drinkMatch =
       drinkFilters.size === 0 ||
-      (barDrinks.get(bar.id) && Array.from(drinkFilters).some((d) => barDrinks.get(bar.id)!.has(d)));
+      (barOfferDrinks.get(bar.id) || []).some((offerDrinks) => {
+        const offerDrinksLower = new Set(Array.from(offerDrinks).map((d) => d.toLowerCase()));
+        return Array.from(drinkFilters).every((d) => offerDrinksLower.has(d.toLowerCase()));
+      });
 
     // AND logic: must pass both active filter types
     return neighbourhoodMatch && drinkMatch;
@@ -144,9 +147,10 @@ export function filterOffers(
       (neighbourhood ? neighbourhoodFilters.has(neighbourhood) : false);
 
     const parsed = parseDrinksArray((offer as any).drinks);
+    const parsedLower = parsed.map((d) => d.toLowerCase());
     const drinkMatch =
       drinkFilters.size === 0 ||
-      parsed.some((d) => drinkFilters.has(d));
+      Array.from(drinkFilters).every((d) => parsedLower.includes(d.toLowerCase()));
 
     return neighbourhoodMatch && drinkMatch;
   });

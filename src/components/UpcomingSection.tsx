@@ -19,7 +19,7 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
       <View style={styles.emptyCard}>
         <Text style={styles.emptyIcon}>🕐</Text>
         <Text style={styles.emptyText}>
-          There are no more Happy Hours coming up today. Check back tomorrow, or use the search bar to find out when your favourite bar runs their Happy Hour!
+          There are no more Happy Hours coming up today. Check back tomorrow, or use the search bar to find details on your favourite place.
         </Text>
       </View>
     );
