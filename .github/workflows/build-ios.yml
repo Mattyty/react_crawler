@@ -29,4 +29,4 @@ jobs:
           EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
           EXPO_APPLE_PASSWORD: ${{ secrets.EXPO_APPLE_PASSWORD }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
-        run: eas build --platform ios --profile production --non-interactive --build-logger-level trace
+        run: eas build --platform ios --profile production --non-interactive --build-logger-level trace --auto-submit=false

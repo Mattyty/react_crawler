@@ -17,6 +17,7 @@
       "icon": "./assets/images/appIcon.png",
       "bundleIdentifier": "com.thecityuncovered.app",
       "buildNumber": "1",
+      "appleTeamId": "26S59BX986",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
