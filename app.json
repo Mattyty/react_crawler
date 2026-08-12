@@ -16,7 +16,10 @@
     "ios": {
       "icon": "./assets/images/appIcon.png",
       "bundleIdentifier": "com.thecityuncovered.app",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "versionCode": 3,
