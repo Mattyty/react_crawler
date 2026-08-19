@@ -128,10 +128,13 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
     }
   }, [selectedBar, router]);
 
-  // Get all today offers for the selected bar
+  // Get all today offers for the selected bar (exclude continuations starting before 06:00)
   const selectedBarOffers = useMemo(() => {
     if (!selectedBar) return [];
-    return allTodayOffers.filter((o) => o.bar_id === selectedBar.id);
+    return allTodayOffers.filter((o) =>
+      o.bar_id === selectedBar.id &&
+      (!o.start_time || o.start_time >= '06:00:00')
+    );
   }, [selectedBar, allTodayOffers]);
 
   // Calculate distance to selected bar
@@ -235,7 +238,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
             </Pressable>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled style={styles.carousel}>
               {(selectedBarOffers.length > 0 ? selectedBarOffers : [null]).map((offer: any, idx: number) => (
-                <View key={offer?.id || idx} style={styles.carouselCard}>
+                <View key={offer?.id || idx} style={[styles.carouselCard, selectedBarOffers.length <= 1 && styles.carouselCardFull]}>
                   <View style={styles.imageContainer}>
                     <Image
                       source={{ uri: getBarImage(selectedBar.image_url, offer?.drinks as any, selectedBar.id) }}
@@ -401,6 +404,10 @@ const styles = StyleSheet.create({
   carouselCard: {
     width: 280,
     marginRight: 12,
+  },
+  carouselCardFull: {
+    width: '100%',
+    marginRight: 0,
   },
   swipeHint: {
     color: '#9CA3AF',
