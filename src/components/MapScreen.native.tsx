@@ -236,34 +236,67 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
             <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
               <Text style={styles.closeText}>✕</Text>
             </Pressable>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled style={styles.carousel}>
-              {(selectedBarOffers.length > 0 ? selectedBarOffers : [null]).map((offer: any, idx: number) => (
-                <View key={offer?.id || idx} style={[styles.carouselCard, selectedBarOffers.length <= 1 && styles.carouselCardFull]}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: getBarImage(selectedBar.image_url, offer?.drinks as any, selectedBar.id) }}
-                      style={styles.floatingCardImage}
-                    />
-                    {(offer as any)?.persona && (
-                      <View style={styles.personaPill}>
-                        <Text style={styles.personaPillText}>{(offer as any).persona}</Text>
-                      </View>
-                    )}
+            {selectedBarOffers.length > 1 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={268}
+                decelerationRate="fast"
+                style={styles.carousel}
+              >
+                {selectedBarOffers.map((offer: any, idx: number) => (
+                  <View key={offer?.id || idx} style={styles.carouselCard}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: getBarImage(selectedBar.image_url, offer?.drinks as any, selectedBar.id) }}
+                        style={styles.floatingCardImage}
+                      />
+                      {offer?.persona && (
+                        <View style={styles.personaPill}>
+                          <Text style={styles.personaPillText}>{offer.persona}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.barName}>{selectedBar.name}</Text>
+                    <Text style={styles.dealText} numberOfLines={2}>
+                      {offer?.['deal summary'] || 'Happy hour available'}
+                    </Text>
+                    <View style={styles.metaRow}>
+                      <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+                      {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
+                    </View>
+                    <Pressable style={styles.viewDealsButton} onPress={() => handleViewDeals(offer?.id)}>
+                      <Text style={styles.viewDealsText}>View Deal</Text>
+                    </Pressable>
                   </View>
-                  <Text style={styles.barName}>{selectedBar.name}</Text>
-                  <Text style={styles.dealText} numberOfLines={2}>
-                    {offer?.['deal summary'] || selectedBar.deal || 'Happy hour available'}
-                  </Text>
-                  <View style={styles.metaRow}>
-                    <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
-                    {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
-                  </View>
-                  <Pressable style={styles.viewDealsButton} onPress={() => handleViewDeals(offer?.id)}>
-                    <Text style={styles.viewDealsText}>View Deal</Text>
-                  </Pressable>
+                ))}
+              </ScrollView>
+            ) : (
+              <View>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: getBarImage(selectedBar.image_url, selectedBar.drinks, selectedBar.id) }}
+                    style={styles.floatingCardImage}
+                  />
+                  {(selectedBarOffers[0] as any)?.persona && (
+                    <View style={styles.personaPill}>
+                      <Text style={styles.personaPillText}>{(selectedBarOffers[0] as any).persona}</Text>
+                    </View>
+                  )}
                 </View>
-              ))}
-            </ScrollView>
+                <Text style={styles.barName}>{selectedBar.name}</Text>
+                <Text style={styles.dealText} numberOfLines={2}>
+                  {selectedBarOffers[0]?.['deal summary'] || selectedBar.deal || 'Happy hour available'}
+                </Text>
+                <View style={styles.metaRow}>
+                  <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+                  {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
+                </View>
+                <Pressable style={styles.viewDealsButton} onPress={() => handleViewDeals(selectedBarOffers[0]?.id)}>
+                  <Text style={styles.viewDealsText}>View Deal</Text>
+                </Pressable>
+              </View>
+            )}
             {selectedBarOffers.length > 1 && (
               <Text style={styles.swipeHint}>Swipe for more offers →</Text>
             )}
@@ -402,12 +435,8 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   carouselCard: {
-    width: 280,
+    width: 256,
     marginRight: 12,
-  },
-  carouselCardFull: {
-    width: '100%',
-    marginRight: 0,
   },
   swipeHint: {
     color: '#9CA3AF',
