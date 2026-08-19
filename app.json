@@ -2,7 +2,7 @@
   "expo": {
     "name": "Uncovered",
     "slug": "react-crawler",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "extra": {
       "eas": {
         "projectId": "434dc5aa-31a2-4120-a9e5-90dbd192f5cc"

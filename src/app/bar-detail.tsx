@@ -1,14 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Image,
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Image,
+    Linking,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,7 +25,7 @@ function getDayOfWeek(): string {
 }
 
 export default function BarDetailScreen() {
-  const { barId } = useLocalSearchParams<{ barId: string }>();
+  const { barId, offerId } = useLocalSearchParams<{ barId: string; offerId?: string }>();
   const router = useRouter();
   const { userPersona } = useAppState();
   const [bar, setBar] = useState<Bar | null>(null);
@@ -33,6 +33,7 @@ export default function BarDetailScreen() {
   const [offerDays, setOfferDays] = useState<string[]>([]);
   const [isLiveNow, setIsLiveNow] = useState(false);
   const [isUpcoming, setIsUpcoming] = useState(false);
+  const [displayEndTime, setDisplayEndTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [reported, setReported] = useState(false);
 
@@ -53,27 +54,59 @@ export default function BarDetailScreen() {
 
       const allBarOffers = offersRes.data || [];
 
-      // Extract all unique days this offer runs
-      const days = Array.from(new Set(allBarOffers.map((o) => o.day_of_week).filter(Boolean))) as string[];
-      setOfferDays(days);
+      // If a specific offerId was passed, use that offer
+      let targetOffer: Offer | null = null;
+      if (offerId) {
+        targetOffer = allBarOffers.find((o) => o.id === Number(offerId)) || null;
+      }
 
-      // Find today's offer
-      const todayOffer = allBarOffers.find(
-        (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
-      ) || allBarOffers[0] || null;
-      if (todayOffer) {
-        setOffer(todayOffer);
+      // If no specific offer, find today's
+      if (!targetOffer) {
+        targetOffer = allBarOffers.find(
+          (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
+        ) || allBarOffers[0] || null;
+      }
+
+      // Extract days for the specific offer (not all offers)
+      if (targetOffer) {
+        // Find all offers with same deal summary (same "offer" across different days)
+        const relatedOffers = allBarOffers.filter(
+          (o) => o['deal summary'] === targetOffer!['deal summary']
+        );
+        // Exclude days where start_time is before 06:00 (these are continuations from the night before)
+        const filteredRelated = relatedOffers.filter((o) => {
+          if (!o.start_time) return true;
+          return o.start_time >= '06:00:00';
+        });
+        const days = Array.from(new Set(filteredRelated.map((o) => o.day_of_week).filter(Boolean))) as string[];
+        setOfferDays(days);
+        setOffer(targetOffer);
+
+        // Check if there's a continuation offer (next day, same deal, starts at 00:00)
+        // If so, use its end_time as the display end time
+        let mergedEndTime = targetOffer.end_time || null;
+        if (targetOffer.end_time && targetOffer.end_time >= '23:00:00') {
+          const continuation = relatedOffers.find((o) =>
+            o.id !== targetOffer!.id &&
+            o.start_time && o.start_time < '06:00:00'
+          );
+          if (continuation?.end_time) {
+            mergedEndTime = continuation.end_time;
+          }
+        }
+        setDisplayEndTime(mergedEndTime);
+
         // Check if live now or upcoming
-        if (todayOffer.start_time && todayOffer.end_time) {
-          const live = todayOffer.start_time <= currentTime && todayOffer.end_time >= currentTime;
-          const upcoming = todayOffer.start_time > currentTime;
+        if (targetOffer.start_time && targetOffer.end_time) {
+          const live = targetOffer.start_time <= currentTime && targetOffer.end_time >= currentTime;
+          const upcoming = targetOffer.start_time > currentTime;
           setIsLiveNow(live);
           setIsUpcoming(upcoming);
         }
       }
       setLoading(false);
     })();
-  }, [barId]);
+  }, [barId, offerId]);
 
   const handleTakeMeThere = () => {
     if (!bar?.address) return;
@@ -132,6 +165,11 @@ export default function BarDetailScreen() {
             source={{ uri: getBarImage(bar.image_url, (offer as any)?.drinks, bar.id) }}
             style={styles.barImage}
           />
+          {(offer as any)?.persona && (
+            <View style={styles.personaPill}>
+              <Text style={styles.personaPillText}>{(offer as any).persona}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.content}>
@@ -150,7 +188,7 @@ export default function BarDetailScreen() {
               <Text style={styles.scheduleTitle}>Happy Hour Times...</Text>
               {offer?.start_time && (
                 <Text style={styles.scheduleTime}>
-                  {offer.start_time.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
+                  {offer.start_time.slice(0, 5)} - {(displayEndTime || offer.end_time || '').slice(0, 5)}
                 </Text>
               )}
               {offerDays.length > 0 && (
@@ -301,8 +339,23 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   logoImage: { width: 40, height: 40 },
   scroll: { flex: 1, backgroundColor: '#141417' },
-  imageWrapper: { padding: 16 },
+  imageWrapper: { padding: 16, position: 'relative' as any },
   barImage: { width: '100%', height: 230, borderRadius: 12, borderWidth: 1, borderColor: '#E1B12C' },
+  personaPill: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    backgroundColor: '#E1B12C',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  personaPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#121212',
+    letterSpacing: 0.5,
+  },
   content: { paddingHorizontal: 16 },
   barName: { fontSize: 24, fontWeight: '500', color: '#E1B12C', textAlign: 'center' },
   barNameLink: { textDecorationLine: 'underline', color: '#E1B12C' },

@@ -33,3 +33,23 @@ export function formatDistance(miles: number): string {
   }
   return `${miles.toFixed(1)} mi away`;
 }
+
+
+/**
+ * Get display end time for an offer, merging with next-day continuation if applicable.
+ * If end_time is >= 23:00 and there's a continuation (start < 06:00), use that end time.
+ */
+export function getDisplayEndTime(offer: { end_time?: string; start_time?: string; bar_id: number; 'deal summary'?: string }, allOffers: any[]): string | undefined {
+  if (!offer.end_time) return undefined;
+  if (offer.end_time < '23:00:00') return offer.end_time;
+
+  // Look for a continuation offer (same bar, same deal, starts before 06:00)
+  const continuation = allOffers.find((o: any) =>
+    o.bar_id === offer.bar_id &&
+    o['deal summary'] === offer['deal summary'] &&
+    o.start_time && o.start_time < '06:00:00' &&
+    o.id !== (offer as any).id
+  );
+
+  return continuation?.end_time || offer.end_time;
+}

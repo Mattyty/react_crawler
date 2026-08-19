@@ -38,6 +38,7 @@ function getCurrentTime(): string {
 
 export function useBars(city: string, userPersona?: string | null) {
   const [mapBars, setMapBars] = useState<MapBar[]>([]);
+  const [allTodayOffers, setAllTodayOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
@@ -101,6 +102,7 @@ export function useBars(city: string, userPersona?: string | null) {
       });
 
     setMapBars(results);
+    setAllTodayOffers(todayOffers);
     setLoading(false);
   }, [city, userPersona]);
 
@@ -108,5 +110,5 @@ export function useBars(city: string, userPersona?: string | null) {
     fetch();
   }, [fetch]);
 
-  return { mapBars, loading, refetch: fetch };
+  return { mapBars, allTodayOffers, loading, refetch: fetch };
 }

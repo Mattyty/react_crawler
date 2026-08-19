@@ -4,16 +4,18 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { IconTime } from '@/components/Icons';
 import { getBarImage } from '@/lib/fallbackImages';
+import { getDisplayEndTime } from '@/lib/haversine';
 
 interface Props {
   offers: Offer[];
   bars: Bar[];
-  onPress: (bar: Bar) => void;
+  onPress: (bar: Bar, offerId?: number) => void;
   topDealBarIds?: Set<number>;
   distanceMap?: Map<number, string>;
+  allOffers?: Offer[];
 }
 
-export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distanceMap }: Props) {
+export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distanceMap, allOffers = [] }: Props) {
   if (offers.length === 0) {
     return (
       <View style={styles.emptyCard}>
@@ -49,7 +51,7 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
               isTopDeal && styles.cardGlow,
               pressed && styles.cardPressed,
             ]}
-            onPress={() => onPress(bar)}
+            onPress={() => onPress(bar, offer.id)}
           >
             {({ pressed }) => (
               <>
@@ -70,7 +72,7 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
                   <Text numberOfLines={1} style={styles.cardDeal}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
                   <View style={styles.bottomRow}>
                     <Text style={styles.cardTime}>
-                      {offer.start_time?.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
+                      {offer.start_time?.slice(0, 5)} - {(getDisplayEndTime(offer, allOffers) || offer.end_time || '').slice(0, 5)}
                     </Text>
                     {distance && (
                       <View style={styles.distancePill}>

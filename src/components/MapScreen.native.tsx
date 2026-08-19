@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 
 import { FilterPills } from '@/components/FilterPills';
@@ -67,7 +67,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 }) {
   const { currentCity, userPersona } = useAppState();
   const city = currentCity || 'Manchester';
-  const { mapBars, loading } = useBars(city, userPersona);
+  const { mapBars, allTodayOffers, loading } = useBars(city, userPersona);
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
@@ -122,11 +122,17 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
     );
   }, []);
 
-  const handleViewDeals = useCallback(() => {
+  const handleViewDeals = useCallback((offerId?: number) => {
     if (selectedBar) {
-      router.push({ pathname: '/bar-detail', params: { barId: String(selectedBar.id) } });
+      router.push({ pathname: '/bar-detail', params: { barId: String(selectedBar.id), ...(offerId ? { offerId: String(offerId) } : {}) } });
     }
   }, [selectedBar, router]);
+
+  // Get all today offers for the selected bar
+  const selectedBarOffers = useMemo(() => {
+    if (!selectedBar) return [];
+    return allTodayOffers.filter((o) => o.bar_id === selectedBar.id);
+  }, [selectedBar, allTodayOffers]);
 
   // Calculate distance to selected bar
   const distanceText = selectedBar && userLocation && selectedBar.lat && selectedBar.long
@@ -221,32 +227,43 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
           ))}
         </MapView>
 
-        {/* Floating preview card */}
+        {/* Floating preview card carousel */}
         {selectedBar && (
           <View style={styles.floatingCard}>
             <Pressable style={styles.closeButton} onPress={() => setSelectedBar(null)}>
               <Text style={styles.closeText}>✕</Text>
             </Pressable>
-            <Image
-              source={{ uri: getBarImage(selectedBar.image_url, selectedBar.drinks, selectedBar.id) }}
-              style={styles.floatingCardImage}
-            />
-            <View style={styles.cardHeader}>
-              <Text style={styles.barName}>{selectedBar.name}</Text>
-            </View>
-            {selectedBar.deal && (
-              <Text style={styles.dealText} numberOfLines={2}>{selectedBar.deal}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} pagingEnabled style={styles.carousel}>
+              {(selectedBarOffers.length > 0 ? selectedBarOffers : [null]).map((offer: any, idx: number) => (
+                <View key={offer?.id || idx} style={styles.carouselCard}>
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: getBarImage(selectedBar.image_url, offer?.drinks as any, selectedBar.id) }}
+                      style={styles.floatingCardImage}
+                    />
+                    {(offer as any)?.persona && (
+                      <View style={styles.personaPill}>
+                        <Text style={styles.personaPillText}>{(offer as any).persona}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.barName}>{selectedBar.name}</Text>
+                  <Text style={styles.dealText} numberOfLines={2}>
+                    {offer?.['deal summary'] || selectedBar.deal || 'Happy hour available'}
+                  </Text>
+                  <View style={styles.metaRow}>
+                    <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
+                    {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
+                  </View>
+                  <Pressable style={styles.viewDealsButton} onPress={() => handleViewDeals(offer?.id)}>
+                    <Text style={styles.viewDealsText}>View Deal</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
+            {selectedBarOffers.length > 1 && (
+              <Text style={styles.swipeHint}>Swipe for more offers →</Text>
             )}
-            {!selectedBar.deal && (
-              <Text style={styles.dealText}>Happy hour available</Text>
-            )}
-            <View style={styles.metaRow}>
-              <Text style={styles.statusLabel}>{STATUS_LABELS[selectedBar.status]}</Text>
-              {distanceText && <Text style={styles.distanceText}>{distanceText}</Text>}
-            </View>
-            <Pressable style={styles.viewDealsButton} onPress={handleViewDeals}>
-              <Text style={styles.viewDealsText}>View Deals</Text>
-            </Pressable>
           </View>
         )}
       </View>
@@ -358,7 +375,38 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 80,
     borderRadius: 10,
+  },
+  imageContainer: {
+    position: 'relative' as any,
     marginBottom: 10,
+  },
+  personaPill: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    backgroundColor: '#E1B12C',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  personaPillText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#121212',
+    letterSpacing: 0.5,
+  },
+  carousel: {
+    flexGrow: 0,
+  },
+  carouselCard: {
+    width: 280,
+    marginRight: 12,
+  },
+  swipeHint: {
+    color: '#9CA3AF',
+    fontSize: 10,
+    textAlign: 'center',
+    marginTop: 6,
   },
   closeButton: {
     position: 'absolute',

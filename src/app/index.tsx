@@ -228,9 +228,9 @@ export default function HomeScreen() {
 
   const flashBars = filteredBarsData.filter((b) => b.is_flash_active);
 
-  const navigateToBar = (bar: Bar) => {
+  const navigateToBar = (bar: Bar, offerId?: number) => {
     setSearchText('');
-    router.push({ pathname: '/bar-detail', params: { barId: String(bar.id) } });
+    router.push({ pathname: '/bar-detail', params: { barId: String(bar.id), ...(offerId ? { offerId: String(offerId) } : {}) } });
   };
 
   if (loading) {
@@ -307,11 +307,11 @@ export default function HomeScreen() {
             />
 
             <View style={styles.divider} />
-            <LiveNowSection offers={filteredLiveOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} />
+            <LiveNowSection offers={filteredLiveOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} allOffers={allOffers} />
 
             <View style={styles.divider} />
             <Text style={styles.sectionTitle}>Deals Coming Up Later...</Text>
-            <UpcomingSection offers={filteredUpcomingOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} />
+            <UpcomingSection offers={filteredUpcomingOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} allOffers={allOffers} />
 
             <View style={{ height: 40 }} />
           </ScrollView>
