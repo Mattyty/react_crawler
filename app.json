@@ -2,7 +2,7 @@
   "expo": {
     "name": "Uncovered",
     "slug": "react-crawler",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "extra": {
       "eas": {
         "projectId": "434dc5aa-31a2-4120-a9e5-90dbd192f5cc"
@@ -23,7 +23,7 @@
       }
     },
     "android": {
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#121212",
         "foregroundImage": "./assets/images/appIcon.png"
