@@ -36,7 +36,8 @@ jobs:
           EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
           EXPO_APPLE_PASSWORD: ${{ secrets.EXPO_APPLE_PASSWORD }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
         run: |
           mkdir -p keys
-          echo "${{ secrets.ASC_API_KEY_P8 }}" > keys/AuthKey_LWZLJ9WZ68.p8
+          printf '%s\n' "$ASC_API_KEY_P8" > keys/AuthKey_LWZLJ9WZ68.p8
           eas submit --platform ios --latest --non-interactive
