@@ -222,8 +222,8 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
-              title={bar.name}
               anchor={{ x: 0.5, y: 0.5 }}
+              tracksViewChanges={false}
             >
               <View style={[styles.pinDot, { backgroundColor: getPinColor(bar), borderColor: bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff' }]} />
             </Marker>

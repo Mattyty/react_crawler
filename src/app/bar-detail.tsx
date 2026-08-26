@@ -4,6 +4,7 @@ import {
     ActivityIndicator,
     Image,
     Linking,
+    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -111,7 +112,11 @@ export default function BarDetailScreen() {
   const handleTakeMeThere = () => {
     if (!bar?.address) return;
     const encoded = encodeURIComponent(bar.address);
-    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encoded}`);
+    if (Platform.OS === 'ios') {
+      Linking.openURL(`maps:?q=${encoded}`);
+    } else {
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encoded}`);
+    }
   };
 
   const handleBookTable = () => {
