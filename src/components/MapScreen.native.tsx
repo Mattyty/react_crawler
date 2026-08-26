@@ -222,6 +222,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               key={bar.id}
               coordinate={{ latitude: bar.lat!, longitude: bar.long! }}
               onPress={() => handleMarkerPress(bar)}
+              onSelect={() => handleMarkerPress(bar)}
               anchor={{ x: 0.5, y: 0.5 }}
               tracksViewChanges={false}
             >
