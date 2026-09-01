@@ -3,18 +3,19 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 interface Props {
   onMenuPress: () => void;
+  onTitlePress?: () => void;
 }
 
-export function Header({ onMenuPress }: Props) {
+export function Header({ onMenuPress, onTitlePress }: Props) {
   return (
     <View style={styles.header}>
       <Pressable onPress={onMenuPress} hitSlop={8}>
         <Text style={styles.menuIcon}>☰</Text>
       </Pressable>
-      <View style={styles.logoTextWrap}>
+      <Pressable onPress={onTitlePress} hitSlop={8} style={styles.logoTextWrap} disabled={!onTitlePress}>
         <Text style={styles.logoLine1}>THE CITY</Text>
         <Text style={styles.logoLine2}>UNCOVERED</Text>
-      </View>
+      </Pressable>
       <View style={styles.spacer} />
       <Image
         source={require('@/assets/images/crawler-logo.png')}

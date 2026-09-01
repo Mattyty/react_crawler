@@ -222,6 +222,14 @@ export default function HomeScreen() {
     setTimeout(() => setFiltering(false), 100);
   }, []);
 
+  const handleTitlePress = useCallback(() => {
+    setActiveTab('bars');
+    setSearchText('');
+    setActiveFilters(new Set());
+    setDrawerOpen(false);
+    fetchData();
+  }, [fetchData]);
+
   const searchResults = searchText
     ? bars.filter((b) => b.name.toLowerCase().includes(searchText.toLowerCase()))
     : [];
@@ -236,7 +244,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <Header onMenuPress={() => setDrawerOpen(true)} />
+        <Header onMenuPress={() => setDrawerOpen(true)} onTitlePress={handleTitlePress} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E1B12C" />
         </View>
@@ -247,7 +255,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header onMenuPress={() => setDrawerOpen(true)} />
+      <Header onMenuPress={() => setDrawerOpen(true)} onTitlePress={handleTitlePress} />
 
       <SearchBar
         searchText={searchText}

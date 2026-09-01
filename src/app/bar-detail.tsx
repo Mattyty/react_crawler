@@ -141,7 +141,7 @@ export default function BarDetailScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <Header onBack={() => router.back()} />
+        <Header onBack={() => router.back()} onTitlePress={() => router.replace('/')} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#E1B12C" />
         </View>
@@ -152,7 +152,7 @@ export default function BarDetailScreen() {
   if (!bar) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <Header onBack={() => router.back()} />
+        <Header onBack={() => router.back()} onTitlePress={() => router.replace('/')} />
         <View style={styles.loadingContainer}>
           <Text>Bar not found</Text>
         </View>
@@ -162,7 +162,7 @@ export default function BarDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header onBack={() => router.back()} />
+      <Header onBack={() => router.back()} onTitlePress={() => router.replace('/')} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Bar Image */}
         <View style={styles.imageWrapper}>
@@ -306,16 +306,16 @@ export default function BarDetailScreen() {
   );
 }
 
-function Header({ onBack }: { onBack: () => void }) {
+function Header({ onBack, onTitlePress }: { onBack: () => void; onTitlePress?: () => void }) {
   return (
     <View style={styles.header}>
       <Pressable onPress={onBack} hitSlop={8}>
         <IconBack size={26} color="#E1B12C" />
       </Pressable>
-      <View style={styles.logoTextWrap}>
+      <Pressable onPress={onTitlePress} hitSlop={8} style={styles.logoTextWrap} disabled={!onTitlePress}>
         <Text style={styles.logoLine1}>THE CITY</Text>
         <Text style={styles.logoLine2}>UNCOVERED</Text>
-      </View>
+      </Pressable>
       <View style={styles.spacer} />
       <Image
         source={require('@/assets/images/crawler-logo.png')}

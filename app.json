@@ -2,7 +2,7 @@
   "expo": {
     "name": "Uncovered",
     "slug": "react-crawler",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "extra": {
       "eas": {
         "projectId": "434dc5aa-31a2-4120-a9e5-90dbd192f5cc"
@@ -16,14 +16,14 @@
     "ios": {
       "icon": "./assets/images/appIcon.png",
       "bundleIdentifier": "com.thecityuncovered.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "appleTeamId": "26S59BX986",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#121212",
         "foregroundImage": "./assets/images/appIcon.png"
