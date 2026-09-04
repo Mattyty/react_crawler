@@ -9,6 +9,7 @@ import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { getBarImage } from '@/lib/fallbackImages';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
+import { MAPTILER_TILE_URL } from '@/lib/mapConfig';
 
 // Error boundary to catch native map crashes gracefully
 class MapErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -197,8 +198,8 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
         >
           {Platform.OS === 'android' && (
             <UrlTile
-              urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              maximumZ={19}
+              urlTemplate={MAPTILER_TILE_URL}
+              maximumZ={20}
               flipY={false}
             />
           )}
@@ -422,12 +423,12 @@ const styles = StyleSheet.create({
     bottom: 6,
     right: 6,
     backgroundColor: '#E1B12C',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    borderRadius: 11,
+    paddingHorizontal: 9,
+    paddingVertical: 2.5,
   },
   personaPillText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
     color: '#121212',
     letterSpacing: 0.5,

@@ -8,6 +8,7 @@ import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { getBarImage } from '@/lib/fallbackImages';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
+import { MAPTILER_ATTRIBUTION, MAPTILER_TILE_URL } from '@/lib/mapConfig';
 
 const CITY_COORDS: Record<string, [number, number]> = {
   Manchester: [53.4808, -2.2426],
@@ -143,9 +144,9 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      L.tileLayer('https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+      L.tileLayer(MAPTILER_TILE_URL, {
+        maxZoom: 20,
+        attribution: MAPTILER_ATTRIBUTION,
       }).addTo(map);
 
       markersRef.current = [];
