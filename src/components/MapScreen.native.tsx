@@ -73,8 +73,18 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  // Markers must track view changes long enough to render their custom pin view,
+  // otherwise on Android (with a custom tile overlay) they can snapshot blank.
+  const [tracksChanges, setTracksChanges] = useState(true);
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
+
+  // Once markers have rendered, stop tracking view changes for performance
+  useEffect(() => {
+    if (!mapBars.length) return;
+    const t = setTimeout(() => setTracksChanges(false), 1500);
+    return () => clearTimeout(t);
+  }, [mapBars]);
 
   // Filter map bars based on active filters
   const filteredBars = React.useMemo(() => {
@@ -201,6 +211,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               urlTemplate={MAPTILER_TILE_URL}
               maximumZ={20}
               flipY={false}
+              zIndex={-1}
             />
           )}
 
@@ -225,7 +236,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
               onPress={() => handleMarkerPress(bar)}
               onSelect={() => handleMarkerPress(bar)}
               anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
+              tracksViewChanges={tracksChanges}
             >
               <View style={[styles.pinDot, { backgroundColor: getPinColor(bar), borderColor: bar.status === 'featured' && bar.isLiveNow ? '#E1B12C' : '#fff' }]} />
             </Marker>

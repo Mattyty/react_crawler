@@ -67,6 +67,11 @@ export function LiveNowSection({ offers, bars, onPress, topDealBarIds, distanceM
                     <Text style={styles.topDealLabel}>TOP DEAL</Text>
                   </View>
                 )}
+                {(offer as any).persona && (
+                  <View style={styles.personaPill}>
+                    <Text style={styles.personaPillText}>{(offer as any).persona}</Text>
+                  </View>
+                )}
                 <View style={styles.cardContent}>
                   <View style={styles.statusPill}>
                     <Text style={styles.statusPillText}>LIVE</Text>
@@ -154,6 +159,22 @@ const styles = StyleSheet.create({
   },
   topDealStar: { fontSize: 12, color: '#E1B12C' },
   topDealLabel: { fontSize: 8, fontWeight: '700', color: '#E1B12C', letterSpacing: 0.5 },
+  personaPill: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#E1B12C',
+    borderRadius: 11,
+    paddingHorizontal: 9,
+    paddingVertical: 2.5,
+    zIndex: 2,
+  },
+  personaPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#121212',
+    letterSpacing: 0.5,
+  },
   cardContent: {
     flex: 1,
     justifyContent: 'flex-end',
