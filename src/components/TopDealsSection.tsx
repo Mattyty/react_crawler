@@ -10,9 +10,10 @@ interface Props {
   offers: Offer[];
   onPress: (bar: Bar) => void;
   liveBarIds?: Set<number>;
+  allOffers?: Offer[];
 }
 
-export function TopDealsSection({ bars, offers, onPress, liveBarIds }: Props) {
+export function TopDealsSection({ bars, offers, onPress, liveBarIds, allOffers = [] }: Props) {
   // Sort: live bars first, then upcoming
   const sortedBars = [...bars].sort((a, b) => {
     const aLive = liveBarIds?.has(a.id) ? 0 : 1;
@@ -64,7 +65,7 @@ export function TopDealsSection({ bars, offers, onPress, liveBarIds }: Props) {
                   )}
                   {offer?.start_time && (
                     <Text style={styles.topDealTime}>
-                      {offer.start_time.slice(0, 5)} - {offer.end_time?.slice(0, 5)}
+                      {offer.start_time.slice(0, 5)} - {(getDisplayEndTime(offer, allOffers) || offer.end_time || '').slice(0, 5)}
                     </Text>
                   )}
                 </View>

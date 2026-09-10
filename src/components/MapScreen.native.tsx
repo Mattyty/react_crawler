@@ -79,9 +79,11 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
 
-  // Once markers have rendered, stop tracking view changes for performance
+  // Whenever the set of bars changes (e.g. persona/city switch), re-enable view
+  // tracking so the new markers render, then disable it again for performance.
   useEffect(() => {
     if (!mapBars.length) return;
+    setTracksChanges(true);
     const t = setTimeout(() => setTracksChanges(false), 1500);
     return () => clearTimeout(t);
   }, [mapBars]);

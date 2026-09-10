@@ -304,7 +304,7 @@ export default function HomeScreen() {
             {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
             <Text style={styles.sectionTitle}>Today's Top Picks...</Text>
-            <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} />
+            <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} allOffers={allOffers} />
 
             {/* Filter Pills */}
             <FilterPills
