@@ -4,6 +4,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native
 
 import { IconStation, IconTime } from '@/components/Icons';
 import { getBarImage } from '@/lib/fallbackImages';
+import { getDisplayEndTime } from '@/lib/haversine';
 
 interface Props {
   bars: Bar[];
