@@ -63,11 +63,11 @@ export function UpcomingSection({ offers, bars, onPress, topDealBarIds, distance
                     <Text style={styles.topDealLabel}>TOP DEAL</Text>
                   </View>
                 )}
+                <View style={styles.statusPill}>
+                  <Text style={styles.statusPillText}>SOON</Text>
+                  <IconTime size={10} color="#121212" />
+                </View>
                 <View style={styles.cardContent}>
-                  <View style={styles.statusPill}>
-                    <Text style={styles.statusPillText}>SOON</Text>
-                    <IconTime size={10} color="#121212" />
-                  </View>
                   <Text style={styles.cardName}>{bar.name}</Text>
                   <Text numberOfLines={1} style={styles.cardDeal}>{offer['deal summary'] || '2-4-1 cocktails'}</Text>
                   <View style={styles.bottomRow}>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    height: 135,
+    height: 125,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.15,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   topDealBadge: {
     position: 'absolute',
     top: 6,
-    right: 8,
+    right: 16,
     alignItems: 'center',
     zIndex: 1,
   },
@@ -139,12 +139,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   statusPill: {
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: 8,
+    left: 16,
+    zIndex: 1,
     backgroundColor: '#E1B12C',
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
