@@ -19,10 +19,21 @@ import { getBarImage } from '@/lib/fallbackImages';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 
+const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
 function getDayOfWeek(): string {
   return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
     new Date().getDay()
   ];
+}
+
+// Expand comma-separated day values, dedupe, and sort Sunday -> Saturday
+function sortDays(days: string[]): string[] {
+  const expanded = days.flatMap((d) => d.split(',').map((s) => s.trim()).filter(Boolean));
+  const unique = Array.from(new Set(expanded));
+  return unique.sort(
+    (a, b) => DAY_ORDER.indexOf(a.toLowerCase()) - DAY_ORDER.indexOf(b.toLowerCase())
+  );
 }
 
 export default function BarDetailScreen() {
@@ -80,7 +91,7 @@ export default function BarDetailScreen() {
           return o.start_time >= '06:00:00';
         });
         const days = Array.from(new Set(filteredRelated.map((o) => o.day_of_week).filter(Boolean))) as string[];
-        setOfferDays(days);
+        setOfferDays(sortDays(days));
         setOffer(targetOffer);
 
         // Check if there's a continuation offer (next day, same deal, starts at 00:00)

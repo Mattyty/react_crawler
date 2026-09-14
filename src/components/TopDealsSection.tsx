@@ -15,11 +15,13 @@ interface Props {
 }
 
 export function TopDealsSection({ bars, offers, onPress, liveBarIds, allOffers = [] }: Props) {
-  // Sort: live bars first, then upcoming
+  // Sort: live bars first, then soon bars in chronological (start-time) order
+  const startTimeFor = (barId: number) => offers.find((o) => o.bar_id === barId)?.start_time || '';
   const sortedBars = [...bars].sort((a, b) => {
     const aLive = liveBarIds?.has(a.id) ? 0 : 1;
     const bLive = liveBarIds?.has(b.id) ? 0 : 1;
-    return aLive - bLive;
+    if (aLive !== bLive) return aLive - bLive;
+    return startTimeFor(a.id).localeCompare(startTimeFor(b.id));
   });
 
   return (

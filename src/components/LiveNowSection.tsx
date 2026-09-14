@@ -1,6 +1,6 @@
 import { Bar, Offer } from '@/lib/types';
 import React from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { IconStation } from '@/components/Icons';
 import { getBarImage } from '@/lib/fallbackImages';
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 12,
     marginTop: 12,
-    height: Platform.OS === 'ios' ? 135 : 145,
+    height: 135,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.15,

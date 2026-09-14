@@ -88,10 +88,12 @@ export default function HomeScreen() {
       (o) => o.day_of_week?.toLowerCase().includes(today.toLowerCase())
     );
 
+    const byStartTime = (a: Offer, b: Offer) => (a.start_time || '').localeCompare(b.start_time || '');
+
     const live = todayOffers.filter(
       (o) => o.start_time && o.end_time && o.start_time <= now && o.end_time >= now
-    );
-    const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now);
+    ).sort(byStartTime);
+    const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now).sort(byStartTime);
 
     const topDealBarIds = new Set(
       todayOffers.filter((o) => {
@@ -104,7 +106,6 @@ export default function HomeScreen() {
         return isLive || isUpcoming;
       }).map((o) => o.bar_id)
     );
-    const topDeals = cityBars.filter((b) => topDealBarIds.has(b.id));
     const topOffers = todayOffers.filter((o) => {
       const val = (o as any).is_top_deal ?? (o as any).top_deal;
       const isTopDeal = val === true || val === 'true' || val === 'TRUE' || val === 1;
@@ -112,7 +113,11 @@ export default function HomeScreen() {
       const isLive = o.start_time && o.end_time && o.start_time <= now && o.end_time >= now;
       const isUpcoming = o.start_time && o.start_time > now;
       return isLive || isUpcoming;
-    });
+    }).sort(byStartTime);
+    // Order featured bars to follow their offer start-time order
+    const topDeals = Array.from(new Set(topOffers.map((o) => o.bar_id)))
+      .map((id) => cityBars.find((b) => b.id === id))
+      .filter((b): b is Bar => !!b);
 
     setBars(cityBars);
     setAllOffers(cityOffers);
