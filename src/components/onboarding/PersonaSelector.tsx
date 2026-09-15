@@ -1,7 +1,9 @@
+import { usePostHog } from 'posthog-react-native';
 import React from 'react';
 import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAppState } from '@/context/AppStateContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 const PERSONAS = [
   { name: 'Student', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/students.png' },
@@ -18,9 +20,12 @@ interface Props {
 
 export function PersonaSelector({ visible, onDone, dismissable }: Props) {
   const { setUserPersona } = useAppState();
+  const posthog = usePostHog();
 
   const selectPersona = (persona: string) => {
     setUserPersona(persona);
+    posthog?.register({ persona });
+    posthog?.capture(AnalyticsEvents.personaSelected, { persona, $set: { persona } });
     onDone();
   };
 

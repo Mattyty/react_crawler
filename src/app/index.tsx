@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { TopDealsSection } from '@/components/TopDealsSection';
 import { UpcomingSection } from '@/components/UpcomingSection';
 import { useAppState } from '@/context/AppStateContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 import { extractFilterOptions, filterBars, filterOffers } from '@/lib/filters';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 import { supabase } from '@/lib/supabase';
@@ -32,6 +34,7 @@ function getCurrentTime(): string {
 export default function HomeScreen() {
   const { currentCity, userPersona } = useAppState();
   const router = useRouter();
+  const posthog = usePostHog();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [bars, setBars] = useState<Bar[]>([]);
   const [allOffers, setAllOffers] = useState<Offer[]>([]);
@@ -208,6 +211,7 @@ export default function HomeScreen() {
 
   const handleToggleFilter = useCallback((filter: string) => {
     setFiltering(true);
+    posthog?.capture(AnalyticsEvents.filterToggled, { filter_name: filter });
     setActiveFilters((prev) => {
       const next = new Set(prev);
       if (next.has(filter)) {
@@ -219,7 +223,7 @@ export default function HomeScreen() {
     });
     // Brief delay to show loading indicator, then clear
     setTimeout(() => setFiltering(false), 100);
-  }, []);
+  }, [posthog]);
 
   const handleClearFilters = useCallback(() => {
     setFiltering(true);
@@ -243,6 +247,12 @@ export default function HomeScreen() {
 
   const navigateToBar = (bar: Bar, offerId?: number) => {
     setSearchText('');
+    const clickedOffer = offerId ? allOffers.find((o) => o.id === offerId) : undefined;
+    posthog?.capture(AnalyticsEvents.venueCardClicked, {
+      venue_name: bar.name,
+      area: bar.neighborhood || null,
+      deal_type: (clickedOffer as any)?.['deal summary'] || null,
+    });
     router.push({ pathname: '/bar-detail', params: { barId: String(bar.id), ...(offerId ? { offerId: String(offerId) } : {}) } });
   };
 

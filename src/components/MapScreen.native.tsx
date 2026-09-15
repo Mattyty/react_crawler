@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -7,6 +8,7 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { FilterPills } from '@/components/FilterPills';
 import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
+import { AnalyticsEvents } from '@/lib/analytics';
 import { getBarImage } from '@/lib/fallbackImages';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 import { MAPTILER_TILE_URL } from '@/lib/mapConfig';
@@ -70,6 +72,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
   const city = currentCity || 'Manchester';
   const { mapBars, allTodayOffers, loading } = useBars(city, userPersona);
   const router = useRouter();
+  const posthog = usePostHog();
   const mapRef = useRef<MapView>(null);
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -137,9 +140,16 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
   const handleViewDeals = useCallback((offerId?: number) => {
     if (selectedBar) {
+      const clicked = offerId ? allTodayOffers.find((o) => o.id === offerId) : undefined;
+      posthog?.capture(AnalyticsEvents.venueCardClicked, {
+        venue_name: selectedBar.name,
+        area: selectedBar.neighborhood || null,
+        deal_type: (clicked as any)?.['deal summary'] || selectedBar.deal || null,
+        source: 'map',
+      });
       router.push({ pathname: '/bar-detail', params: { barId: String(selectedBar.id), ...(offerId ? { offerId: String(offerId) } : {}) } });
     }
-  }, [selectedBar, router]);
+  }, [selectedBar, router, posthog, allTodayOffers]);
 
   // Get all today offers for the selected bar (exclude continuations starting before 06:00)
   const selectedBarOffers = useMemo(() => {

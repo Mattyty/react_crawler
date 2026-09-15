@@ -1,7 +1,9 @@
+import { usePostHog } from 'posthog-react-native';
 import React from 'react';
 import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAppState } from '@/context/AppStateContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 
 const CITIES = [
   { name: 'Manchester', image: 'https://wfanbaefeuxczqxzqfdk.supabase.co/storage/v1/object/public/bar-photos/mcr.png' },
@@ -16,9 +18,12 @@ interface Props {
 
 export function CitySelector({ visible, onDone, dismissable }: Props) {
   const { setCurrentCity } = useAppState();
+  const posthog = usePostHog();
 
   const selectCity = (city: string) => {
     setCurrentCity(city);
+    posthog?.register({ city });
+    posthog?.capture(AnalyticsEvents.citySelected, { city, $set: { city } });
     onDone();
   };
 

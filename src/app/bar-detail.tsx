@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconBack, IconStation, IconTime } from '@/components/Icons';
 import { useAppState } from '@/context/AppStateContext';
+import { AnalyticsEvents } from '@/lib/analytics';
 import { getBarImage } from '@/lib/fallbackImages';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
@@ -40,6 +42,7 @@ export default function BarDetailScreen() {
   const { barId, offerId } = useLocalSearchParams<{ barId: string; offerId?: string }>();
   const router = useRouter();
   const { userPersona } = useAppState();
+  const posthog = usePostHog();
   const [bar, setBar] = useState<Bar | null>(null);
   const [offer, setOffer] = useState<Offer | null>(null);
   const [offerDays, setOfferDays] = useState<string[]>([]);
@@ -122,6 +125,7 @@ export default function BarDetailScreen() {
 
   const handleTakeMeThere = () => {
     if (!bar?.address) return;
+    posthog?.capture(AnalyticsEvents.getDirectionsClicked, { venue_name: bar.name });
     const encoded = encodeURIComponent(bar.address);
     if (Platform.OS === 'ios') {
       Linking.openURL(`maps:?q=${encoded}`);
@@ -135,6 +139,7 @@ export default function BarDetailScreen() {
     const url = bar.table_reservation.startsWith('http')
       ? bar.table_reservation
       : `https://${bar.table_reservation}`;
+    posthog?.capture(AnalyticsEvents.outboundLinkClicked, { venue_name: bar.name, destination: url });
     Linking.openURL(url);
   };
 
@@ -191,7 +196,11 @@ export default function BarDetailScreen() {
         <View style={styles.content}>
           {/* Bar Name - linked if url available */}
           {bar.url ? (
-            <Pressable onPress={() => Linking.openURL(bar.url!.startsWith('http') ? bar.url! : `https://${bar.url}`)}>
+            <Pressable onPress={() => {
+              const url = bar.url!.startsWith('http') ? bar.url! : `https://${bar.url}`;
+              posthog?.capture(AnalyticsEvents.outboundLinkClicked, { venue_name: bar.name, destination: url });
+              Linking.openURL(url);
+            }}>
               <Text style={[styles.barName, styles.barNameLink]}>{bar.name}</Text>
             </Pressable>
           ) : (
