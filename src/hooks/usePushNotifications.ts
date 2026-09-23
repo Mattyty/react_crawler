@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { useAppState } from '@/context/AppStateContext';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +16,28 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+type Router = ReturnType<typeof useRouter>;
+
+// Routes to the correct screen based on the tapped notification's data payload.
+// Send pushes with a `data` object like:
+//   { screen: 'bar-detail', barId: '125', offerId: '254' }  -> opens that bar
+//   { screen: 'home' } or no data                            -> opens the wall
+function handleNotificationRoute(data: Record<string, any> | undefined, router: Router) {
+  if (!data) return;
+  const screen = data.screen ?? data.type;
+  if (screen === 'bar-detail' && data.barId) {
+    router.push({
+      pathname: '/bar-detail',
+      params: {
+        barId: String(data.barId),
+        ...(data.offerId ? { offerId: String(data.offerId) } : {}),
+      },
+    });
+  } else if (screen === 'home') {
+    router.replace('/');
+  }
+}
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   // Remote push only works on physical devices, never on simulators/emulators.
@@ -98,6 +120,29 @@ export function usePushNotifications() {
       }
     });
     return () => sub.remove();
+  }, []);
+
+  // Deep-link handling: route the user when they tap a notification.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    // App opened from a cold start by tapping a notification.
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      const data = response?.notification.request.content.data as
+        | Record<string, any>
+        | undefined;
+      handleNotificationRoute(data, router);
+    });
+
+    // App already running (foreground/background) when the notification is tapped.
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as
+        | Record<string, any>
+        | undefined;
+      handleNotificationRoute(data, router);
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
 
