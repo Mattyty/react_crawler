@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppSplash } from '@/components/AppSplash';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { AppStateProvider, useAppState } from '@/context/AppStateContext';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { POSTHOG_API_KEY, POSTHOG_HOST } from '@/lib/analytics';
 
 // Keeps the user's selected city & persona attached to every event as global
@@ -25,6 +26,12 @@ function AnalyticsIdentity() {
     posthog.capture('$set', { $set: props });
   }, [posthog, currentCity, userPersona]);
 
+  return null;
+}
+
+// Registers this device for push notifications and syncs city/persona.
+function PushRegistration() {
+  usePushNotifications();
   return null;
 }
 
@@ -50,6 +57,7 @@ export default function RootLayout() {
       >
         <AppStateProvider>
           <AnalyticsIdentity />
+          <PushRegistration />
           <OnboardingFlow />
           <Stack
             screenOptions={{

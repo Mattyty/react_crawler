@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "881274541521",
+    "project_id": "the-city-uncovered",
+    "storage_bucket": "the-city-uncovered.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881274541521:android:ea29d9497e8e7ef83dbcf0",
+        "android_client_info": {
+          "package_name": "com.thecityuncovered.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8ENXFOsRTXQ4evBhSCmuUs6VncTjbpU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

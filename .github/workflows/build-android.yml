@@ -24,5 +24,5 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build AAB (Production)
-        run: eas build --platform android --profile production --non-interactive --build-logger-level trace
+      - name: Build APK (Preview)
+        run: eas build --platform android --profile preview --non-interactive --build-logger-level trace
