@@ -1,7 +1,6 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { usePostHog } from 'posthog-react-native';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
@@ -18,14 +17,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
-type PushDebug = (stage: string, detail?: Record<string, any>) => void;
-
-async function registerForPushNotificationsAsync(debug: PushDebug): Promise<string | null> {
+async function registerForPushNotificationsAsync(): Promise<string | null> {
   // Remote push only works on physical devices, never on simulators/emulators.
-  if (!Device.isDevice) {
-    debug('not_a_device');
-    return null;
-  }
+  if (!Device.isDevice) return null;
 
   // Android requires a notification channel to display notifications.
   if (Platform.OS === 'android') {
@@ -41,22 +35,18 @@ async function registerForPushNotificationsAsync(debug: PushDebug): Promise<stri
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
-  debug('permission_status', { status: finalStatus });
   if (finalStatus !== 'granted') return null;
 
   // projectId is required on EAS/standalone builds to mint an Expo push token.
   const projectId =
     Constants?.expoConfig?.extra?.eas?.projectId ??
     (Constants as any)?.easConfig?.projectId;
-  debug('project_id', { projectId: projectId ?? null });
   if (!projectId) return null;
 
   try {
     const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
-    debug('token_ok', { token: tokenResponse.data });
     return tokenResponse.data;
-  } catch (e: any) {
-    debug('token_error', { message: e?.message ?? String(e) });
+  } catch {
     return null;
   }
 }
@@ -67,28 +57,23 @@ async function registerForPushNotificationsAsync(debug: PushDebug): Promise<stri
  */
 export function usePushNotifications() {
   const { currentCity, userPersona } = useAppState();
-  const posthog = usePostHog();
   const tokenRef = useRef<string | null>(null);
+  // Keep the latest city/persona available to the AppState listener without
+  // re-subscribing on every change.
+  const cityRef = useRef(currentCity);
+  const personaRef = useRef(userPersona);
+  cityRef.current = currentCity;
+  personaRef.current = userPersona;
 
   // Register the token once on mount (after permission is granted).
   useEffect(() => {
     if (Platform.OS === 'web') return;
     let cancelled = false;
-    // TEMP diagnostics: surface each stage to PostHog so we can see where push
-    // registration fails on device without a console. Remove once confirmed.
-    const debug: PushDebug = (stage, detail) => {
-      console.log('[push]', stage, detail ?? '');
-      posthog?.capture('push_debug', { stage, ...(detail ?? {}) });
-    };
     (async () => {
-      try {
-        const token = await registerForPushNotificationsAsync(debug);
-        if (cancelled || !token) return;
-        tokenRef.current = token;
-        await upsertToken(token, currentCity, userPersona, debug);
-      } catch (e: any) {
-        debug('unexpected_error', { message: e?.message ?? String(e) });
-      }
+      const token = await registerForPushNotificationsAsync();
+      if (cancelled || !token) return;
+      tokenRef.current = token;
+      await upsertToken(token, cityRef.current, personaRef.current);
     })();
     return () => {
       cancelled = true;
@@ -102,9 +87,21 @@ export function usePushNotifications() {
     if (!tokenRef.current) return;
     upsertToken(tokenRef.current, currentCity, userPersona);
   }, [currentCity, userPersona]);
+
+  // Refresh the token row when the app returns to the foreground, so the row
+  // stays current even without a full cold start.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && tokenRef.current) {
+        upsertToken(tokenRef.current, cityRef.current, personaRef.current);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 }
 
-async function upsertToken(token: string, city: string, persona: string, debug?: PushDebug) {
+async function upsertToken(token: string, city: string, persona: string) {
   const row: Record<string, any> = {
     expo_push_token: token,
     updated_at: new Date().toISOString(),
@@ -118,9 +115,7 @@ async function upsertToken(token: string, city: string, persona: string, debug?:
     .from('device_tokens')
     .upsert(row, { onConflict: 'expo_push_token', ignoreDuplicates: false });
   if (error) {
-    debug?.('upsert_error', { message: error.message });
+    // Swallow — push registration must never crash the app.
     console.warn('[push] device_tokens upsert failed:', error.message);
-  } else {
-    debug?.('upsert_ok', { city: city || null, persona: persona || null });
   }
 }
