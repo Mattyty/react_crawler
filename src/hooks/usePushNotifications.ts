@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { usePostHog } from 'posthog-react-native';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
@@ -17,9 +18,14 @@ Notifications.setNotificationHandler({
   }),
 });
 
-async function registerForPushNotificationsAsync(): Promise<string | null> {
+type PushDebug = (stage: string, detail?: Record<string, any>) => void;
+
+async function registerForPushNotificationsAsync(debug: PushDebug): Promise<string | null> {
   // Remote push only works on physical devices, never on simulators/emulators.
-  if (!Device.isDevice) return null;
+  if (!Device.isDevice) {
+    debug('not_a_device');
+    return null;
+  }
 
   // Android requires a notification channel to display notifications.
   if (Platform.OS === 'android') {
@@ -35,18 +41,22 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
+  debug('permission_status', { status: finalStatus });
   if (finalStatus !== 'granted') return null;
 
   // projectId is required on EAS/standalone builds to mint an Expo push token.
   const projectId =
     Constants?.expoConfig?.extra?.eas?.projectId ??
     (Constants as any)?.easConfig?.projectId;
+  debug('project_id', { projectId: projectId ?? null });
   if (!projectId) return null;
 
   try {
     const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
+    debug('token_ok', { token: tokenResponse.data });
     return tokenResponse.data;
-  } catch {
+  } catch (e: any) {
+    debug('token_error', { message: e?.message ?? String(e) });
     return null;
   }
 }
@@ -57,17 +67,28 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
  */
 export function usePushNotifications() {
   const { currentCity, userPersona } = useAppState();
+  const posthog = usePostHog();
   const tokenRef = useRef<string | null>(null);
 
   // Register the token once on mount (after permission is granted).
   useEffect(() => {
     if (Platform.OS === 'web') return;
     let cancelled = false;
+    // TEMP diagnostics: surface each stage to PostHog so we can see where push
+    // registration fails on device without a console. Remove once confirmed.
+    const debug: PushDebug = (stage, detail) => {
+      console.log('[push]', stage, detail ?? '');
+      posthog?.capture('push_debug', { stage, ...(detail ?? {}) });
+    };
     (async () => {
-      const token = await registerForPushNotificationsAsync();
-      if (cancelled || !token) return;
-      tokenRef.current = token;
-      await upsertToken(token, currentCity, userPersona);
+      try {
+        const token = await registerForPushNotificationsAsync(debug);
+        if (cancelled || !token) return;
+        tokenRef.current = token;
+        await upsertToken(token, currentCity, userPersona, debug);
+      } catch (e: any) {
+        debug('unexpected_error', { message: e?.message ?? String(e) });
+      }
     })();
     return () => {
       cancelled = true;
@@ -83,7 +104,7 @@ export function usePushNotifications() {
   }, [currentCity, userPersona]);
 }
 
-async function upsertToken(token: string, city: string, persona: string) {
+async function upsertToken(token: string, city: string, persona: string, debug?: PushDebug) {
   const row: Record<string, any> = {
     expo_push_token: token,
     updated_at: new Date().toISOString(),
@@ -97,7 +118,9 @@ async function upsertToken(token: string, city: string, persona: string) {
     .from('device_tokens')
     .upsert(row, { onConflict: 'expo_push_token', ignoreDuplicates: false });
   if (error) {
-    // Swallow — push registration must never crash the app.
+    debug?.('upsert_error', { message: error.message });
     console.warn('[push] device_tokens upsert failed:', error.message);
+  } else {
+    debug?.('upsert_ok', { city: city || null, persona: persona || null });
   }
 }
