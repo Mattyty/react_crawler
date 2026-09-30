@@ -20,10 +20,14 @@ import { formatDistance, haversineDistance } from '@/lib/haversine';
 import { supabase } from '@/lib/supabase';
 import { Bar, Offer } from '@/lib/types';
 
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 function getDayOfWeek(): string {
-  return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][
-    new Date().getDay()
-  ];
+  return DAYS[new Date().getDay()];
+}
+
+function getTomorrowDayOfWeek(): string {
+  return DAYS[(new Date().getDay() + 1) % 7];
 }
 
 function getCurrentTime(): string {
@@ -40,6 +44,7 @@ export default function HomeScreen() {
   const [allOffers, setAllOffers] = useState<Offer[]>([]);
   const [liveOffers, setLiveOffers] = useState<Offer[]>([]);
   const [upcomingOffers, setUpcomingOffers] = useState<Offer[]>([]);
+  const [tomorrowOffers, setTomorrowOffers] = useState<Offer[]>([]);
   const [topDealBars, setTopDealBars] = useState<Bar[]>([]);
   const [topDealOffers, setTopDealOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +103,14 @@ export default function HomeScreen() {
     ).sort(byStartTime);
     const upcoming = todayOffers.filter((o) => o.start_time && o.start_time > now).sort(byStartTime);
 
+    // Tomorrow's deals — used as a fallback when nothing is live or upcoming today.
+    // Exclude continuation offers that start before 06:00 (they belong to the night before).
+    const tomorrow = getTomorrowDayOfWeek();
+    const tomorrowDeals = visibleOffers
+      .filter((o) => o.day_of_week?.toLowerCase().includes(tomorrow.toLowerCase()))
+      .filter((o) => !o.start_time || o.start_time >= '06:00:00')
+      .sort(byStartTime);
+
     const topDealBarIds = new Set(
       todayOffers.filter((o) => {
         const val = (o as any).is_top_deal ?? (o as any).top_deal;
@@ -126,6 +139,7 @@ export default function HomeScreen() {
     setAllOffers(cityOffers);
     setLiveOffers(live);
     setUpcomingOffers(upcoming);
+    setTomorrowOffers(tomorrowDeals);
     setTopDealBars(topDeals);
     setTopDealOffers(topOffers);
     setLoading(false);
@@ -157,6 +171,14 @@ export default function HomeScreen() {
     () => filterOffers(upcomingOffers, bars, activeFilters),
     [upcomingOffers, bars, activeFilters]
   );
+
+  const filteredTomorrowOffers = useMemo(
+    () => filterOffers(tomorrowOffers, bars, activeFilters),
+    [tomorrowOffers, bars, activeFilters]
+  );
+
+  // When nothing is live or coming up today, fall back to showing tomorrow's deals.
+  const showTomorrow = filteredLiveOffers.length === 0 && filteredUpcomingOffers.length === 0;
 
   const filteredTopDealBars = useMemo(
     () => (activeFilters.size === 0 ? topDealBars : filterBars(topDealBars, allOffers, activeFilters)),
@@ -318,8 +340,12 @@ export default function HomeScreen() {
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {flashBars.length > 0 && <FlashSection bars={flashBars} onPress={navigateToBar} />}
 
-            <Text style={styles.sectionTitle}>Today's Top Picks...</Text>
-            <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} allOffers={allOffers} />
+            {filteredTopDealBars.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Today's Top Picks...</Text>
+                <TopDealsSection bars={filteredTopDealBars} offers={topDealOffers} onPress={navigateToBar} liveBarIds={liveBarIds} allOffers={allOffers} />
+              </>
+            )}
 
             {/* Filter Pills */}
             <FilterPills
@@ -333,8 +359,17 @@ export default function HomeScreen() {
             <LiveNowSection offers={filteredLiveOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} allOffers={allOffers} />
 
             <View style={styles.divider} />
-            <Text style={styles.sectionTitle}>Deals Coming Up Later...</Text>
-            <UpcomingSection offers={filteredUpcomingOffers} bars={filteredBarsData} onPress={navigateToBar} topDealBarIds={topDealBarIds} distanceMap={distanceMap} allOffers={allOffers} />
+            <Text style={styles.sectionTitle}>
+              {showTomorrow ? 'Deals Coming Up Tomorrow...' : 'Deals Coming Up Later...'}
+            </Text>
+            <UpcomingSection
+              offers={showTomorrow ? filteredTomorrowOffers : filteredUpcomingOffers}
+              bars={filteredBarsData}
+              onPress={navigateToBar}
+              topDealBarIds={topDealBarIds}
+              distanceMap={distanceMap}
+              allOffers={allOffers}
+            />
 
             <View style={{ height: 40 }} />
           </ScrollView>

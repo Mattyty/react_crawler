@@ -2,15 +2,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    Linking,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Image,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -124,13 +124,19 @@ export default function BarDetailScreen() {
   }, [barId, offerId]);
 
   const handleTakeMeThere = () => {
-    if (!bar?.address) return;
+    if (!bar) return;
+    // Prefer precise coordinates; fall back to the address string.
+    const hasCoords = bar.lat != null && bar.long != null;
+    const destination = hasCoords ? `${bar.lat},${bar.long}` : bar.address;
+    if (!destination) return;
     posthog?.capture(AnalyticsEvents.getDirectionsClicked, { venue_name: bar.name });
-    const encoded = encodeURIComponent(bar.address);
+    const encoded = encodeURIComponent(destination);
     if (Platform.OS === 'ios') {
-      Linking.openURL(`maps:?q=${encoded}`);
+      // Apple Maps walking directions (dirflg=w); start = current location.
+      Linking.openURL(`maps:?daddr=${encoded}&dirflg=w`);
     } else {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encoded}`);
+      // Google Maps walking directions from current location.
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=walking`);
     }
   };
 
@@ -267,26 +273,11 @@ export default function BarDetailScreen() {
           <View style={styles.divider} />
 
           {/* Bar Vibe */}
-          <Text style={styles.sectionTitle}>The Vibe</Text>
+          <Text style={styles.sectionTitle}>The Vibe:</Text>
           <Text style={styles.description}>
             {bar.bar_description ||
               'German Beer house with a roaring fire, live music, great food and alpine vibes'}
           </Text>
-
-          <View style={styles.divider} />
-
-          {/* Address */}
-          <Text style={styles.address}><Text style={styles.addressLabel}>The Address: </Text>{bar.address || '32 Deansgate, Manchester, M1 3PX'}</Text>
-
-          {/* Static map - tap to open directions */}
-          {bar.lat && bar.long && (
-            <Pressable onPress={handleTakeMeThere}>
-              <Image
-                source={{ uri: `https://maps.googleapis.com/maps/api/staticmap?center=${bar.lat},${bar.long}&zoom=16&size=400x150&markers=color:0xE1B12C%7C${bar.lat},${bar.long}&key=AIzaSyDo9TG7H0t2ACrWHBg6BLhR_oS9DPyKTo8` }}
-                style={styles.staticMap}
-              />
-            </Pressable>
-          )}
 
           {/* Book A Table - only show if table_reservation URL available */}
           {bar.table_reservation && (
@@ -299,6 +290,32 @@ export default function BarDetailScreen() {
               )}
             </Pressable>
           )}
+
+          <View style={styles.divider} />
+
+          {/* Address */}
+          <Text style={styles.sectionTitle}>The Address:</Text>
+          <Pressable onPress={handleTakeMeThere}>
+            <Text style={[styles.description, styles.addressLink]}>
+              {bar.address || '32 Deansgate, Manchester, M1 3PX'}
+            </Text>
+          </Pressable>
+
+          {/* Take Me There prompt pointing at the map below */}
+          {bar.lat && bar.long && (
+            <>
+              <Text style={styles.takeMeThereTitle}>Take Me There 👇</Text>
+              <Pressable onPress={handleTakeMeThere}>
+                <Image
+                  source={require('@/assets/images/map-placeholder.png')}
+                  style={styles.staticMap}
+                  resizeMode="cover"
+                />
+              </Pressable>
+            </>
+          )}
+
+          <View style={styles.divider} />
 
           {/* Deal Verification */}
           <Text style={styles.verifyTitle}>Is this deal still live?</Text>
@@ -412,9 +429,18 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 24, fontWeight: '600', color: '#E1B12C', marginTop: 8 },
   description: { fontSize: 14, fontWeight: '400', color: '#D1D5DB', marginTop: 12, lineHeight: 20 },
   verified: { fontSize: 12, marginTop: 10, color: '#9CA3AF', textAlign: 'center' },
-  divider: { height: 1, backgroundColor: '#333333', marginVertical: 16 },
+  divider: { height: 1, width: '70%', alignSelf: 'center', backgroundColor: '#6E5A1E', marginTop: 20, marginBottom: 12 },
   address: { fontSize: 14, fontWeight: '500', color: '#D1D5DB' },
   addressLabel: { fontWeight: '700', color: '#E1B12C' },
+  addressLink: { textDecorationLine: 'underline' },
+  takeMeThereTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#E1B12C',
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 8,
+  },
   staticMap: {
     width: '100%',
     height: 101,
@@ -438,7 +464,7 @@ const styles = StyleSheet.create({
   buttonText: { color: '#121212', fontSize: 16, fontWeight: '600' },
   buttonPressed: { backgroundColor: '#121212' },
   buttonTextPressed: { color: '#E1B12C' },
-  verifyTitle: { fontSize: 18, fontWeight: '500', textAlign: 'center', marginTop: 24, color: '#FFFFFF' },
+  verifyTitle: { fontSize: 18, fontWeight: '500', textAlign: 'center', marginTop: 8, color: '#FFFFFF' },
   verifyRow: { flexDirection: 'row', justifyContent: 'center', gap: 24, marginTop: 12 },
   noButton: {
     backgroundColor: '#FF3D3D',

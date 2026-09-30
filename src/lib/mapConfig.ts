@@ -13,3 +13,5 @@ export const MAPTILER_TILE_URL = `https://api.maptiler.com/maps/${STYLE}/256/{z}
 
 export const MAPTILER_ATTRIBUTION =
   '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+
