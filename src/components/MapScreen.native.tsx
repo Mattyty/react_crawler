@@ -10,6 +10,7 @@ import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { AnalyticsEvents } from '@/lib/analytics';
 import { getBarImage } from '@/lib/fallbackImages';
+import { filterBars } from '@/lib/filters';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 import { MAPTILER_TILE_URL } from '@/lib/mapConfig';
 
@@ -91,23 +92,12 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
     return () => clearTimeout(t);
   }, [mapBars]);
 
-  // Filter map bars based on active filters
-  const filteredBars = React.useMemo(() => {
-    if (!activeFilters || activeFilters.size === 0) return mapBars;
-    return mapBars.filter((bar) => {
-      const allNeighbourhoods = new Set(mapBars.map((b) => b.neighborhood?.trim()).filter(Boolean));
-      const activeNeighbourhoods = Array.from(activeFilters).filter((f) => allNeighbourhoods.has(f));
-      const activeDrinks = Array.from(activeFilters).filter((f) => !allNeighbourhoods.has(f));
-
-      const nMatch = activeNeighbourhoods.length === 0 ||
-        (bar.neighborhood && activeNeighbourhoods.includes(bar.neighborhood.trim()));
-
-      const dMatch = activeDrinks.length === 0 ||
-        (bar.drinks && activeDrinks.every((d) => bar.drinks!.includes(d)));
-
-      return nMatch && dMatch;
-    });
-  }, [mapBars, activeFilters]);
+  // Filter map bars using the same logic as the main wall:
+  // neighbourhoods = OR, drinks/features = AND (per-offer across all offers).
+  const filteredBars = React.useMemo(
+    () => filterBars(mapBars, allTodayOffers, activeFilters || new Set()) as MapBar[],
+    [mapBars, allTodayOffers, activeFilters]
+  );
 
   // Request permission and watch user location
   useEffect(() => {

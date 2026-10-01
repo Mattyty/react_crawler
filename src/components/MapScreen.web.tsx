@@ -9,6 +9,7 @@ import { useAppState } from '@/context/AppStateContext';
 import { MapBar, useBars } from '@/hooks/useBars';
 import { AnalyticsEvents } from '@/lib/analytics';
 import { getBarImage } from '@/lib/fallbackImages';
+import { filterBars } from '@/lib/filters';
 import { formatDistance, haversineDistance } from '@/lib/haversine';
 import { MAPTILER_ATTRIBUTION, MAPTILER_TILE_URL } from '@/lib/mapConfig';
 
@@ -46,7 +47,7 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 }) {
   const { currentCity, userPersona } = useAppState();
   const city = currentCity || 'Manchester';
-  const { mapBars, loading } = useBars(city, userPersona);
+  const { mapBars, allTodayOffers, loading } = useBars(city, userPersona);
   const router = useRouter();
   const posthog = usePostHog();
   const [selectedBar, setSelectedBar] = useState<MapBar | null>(null);
@@ -58,23 +59,12 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
   const filters = activeFilters || new Set<string>();
 
-  // Filter map bars based on active filters
-  const filteredMapBars = useMemo(() => {
-    if (filters.size === 0) return mapBars;
-    return mapBars.filter((bar) => {
-      const allNeighbourhoods = new Set(mapBars.map((b) => b.neighborhood?.trim()).filter(Boolean));
-      const activeNeighbourhoods = Array.from(filters).filter((f) => allNeighbourhoods.has(f));
-      const activeDrinks = Array.from(filters).filter((f) => !allNeighbourhoods.has(f));
-
-      const nMatch = activeNeighbourhoods.length === 0 ||
-        (bar.neighborhood && activeNeighbourhoods.includes(bar.neighborhood.trim()));
-
-      const dMatch = activeDrinks.length === 0 ||
-        (bar.drinks && activeDrinks.every((d) => bar.drinks!.map(x => x.toLowerCase()).includes(d.toLowerCase())));
-
-      return nMatch && dMatch;
-    });
-  }, [mapBars, filters]);
+  // Filter map bars using the same logic as the main wall:
+  // neighbourhoods = OR, drinks/features = AND (per-offer across all offers).
+  const filteredMapBars = useMemo(
+    () => filterBars(mapBars, allTodayOffers, filters) as MapBar[],
+    [mapBars, allTodayOffers, filters]
+  );
 
   const centre = CITY_COORDS[city] || CITY_COORDS.Manchester;
 
