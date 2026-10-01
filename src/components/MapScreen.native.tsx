@@ -83,21 +83,26 @@ export function MapScreen({ activeFilters, onToggleFilter, onClearFilters, filte
 
   const centre = CITY_COORDS[city] || DEFAULT_CENTRE;
 
-  // Whenever the set of bars changes (e.g. persona/city switch), re-enable view
-  // tracking so the new markers render, then disable it again for performance.
-  useEffect(() => {
-    if (!mapBars.length) return;
-    setTracksChanges(true);
-    const t = setTimeout(() => setTracksChanges(false), 1500);
-    return () => clearTimeout(t);
-  }, [mapBars]);
-
   // Filter map bars using the same logic as the main wall:
   // neighbourhoods = OR, drinks/features = AND (per-offer across all offers).
   const filteredBars = React.useMemo(
     () => filterBars(mapBars, allTodayOffers, activeFilters || new Set()) as MapBar[],
     [mapBars, allTodayOffers, activeFilters]
   );
+
+  // A stable key representing exactly which bars are currently shown. Changes
+  // whenever filters add/remove pins (or data changes).
+  const visibleBarsKey = filteredBars.map((b) => b.id).join(',');
+
+  // Whenever the visible set of markers changes, briefly re-enable view tracking
+  // so Android repaints returning/new markers (they otherwise stay blank when
+  // re-added after being filtered out), then disable it again for performance.
+  useEffect(() => {
+    if (!filteredBars.length) return;
+    setTracksChanges(true);
+    const t = setTimeout(() => setTracksChanges(false), 1200);
+    return () => clearTimeout(t);
+  }, [visibleBarsKey]);
 
   // Request permission and watch user location
   useEffect(() => {
